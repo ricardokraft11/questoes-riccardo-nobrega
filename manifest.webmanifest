@@ -1,3 +1,26 @@
-{ "name": "Plataforma de Questões · Professor Riccardo Nóbrega", "short_name": "Questões RN", "start_url": "./index.html", "display": "standalone",
-  "background_color": "#EDF0F3", "theme_color": "#16202B", "lang": "pt-BR",
-  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }] }
+{
+  "id": "./",
+  "name": "Plataforma de Questões · Professor Riccardo Nóbrega",
+  "short_name": "Questões RN",
+  "description": "Questões comentadas, simulados cronometrados, revisão espaçada e estatísticas para a GCM de Sobral e a Guarda Municipal de Fortaleza.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "./#inicio",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#16202B",
+  "theme_color": "#16202B",
+  "categories": ["education"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Resolver questões", "url": "./#resolver", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Simulados", "url": "./#simulado", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Revisão do dia", "url": "./#revisao", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
