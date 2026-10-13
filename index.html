@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap">
 <style>/* ===== Tokens ===== */
-:root{
+:root{--sa-top:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px));--sa-right:max(env(safe-area-inset-right,0px),var(--safe-area-inset-right,0px));--sa-bottom:max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px));--sa-left:max(env(safe-area-inset-left,0px),var(--safe-area-inset-left,0px));
   --bg:#EDF0F3; --surface:#FFFFFF; --surface2:#F6F8FA; --ink:#16202B; --muted:#5A6572; --line:#D4DAE1;
   --accent:#9A6412; --accent-soft:#F6ECDC; --focus:#2F5E8C; --focus-soft:#E3EDF7;
   --ok:#17724A; --ok-bg:#E2F3E9; --ok-line:#7CC39C;
@@ -75,7 +75,7 @@ h3{font-size:18px;font-weight:600}
 kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;background:var(--surface)}
 
 /* ===== Topbar ===== */
-.topbar{display:flex;align-items:center;gap:16px;padding:calc(10px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) 10px calc(16px + env(safe-area-inset-left,0px));background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.topbar{display:flex;align-items:center;gap:16px;padding:calc(10px + var(--sa-top)) calc(16px + var(--sa-right)) 10px calc(16px + var(--sa-left));background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
 .brand-mark{font-family:var(--display);font-weight:700;background:var(--ink);color:var(--accent);border-radius:8px;width:36px;height:36px;display:grid;place-items:center;font-size:16px;letter-spacing:.02em}
 .brand-text{display:flex;flex-direction:column;line-height:1.05}
@@ -226,7 +226,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
 /* ===== Simulado ===== */
 .timer{font-family:var(--display);font-size:30px;font-weight:600;font-variant-numeric:tabular-nums}
 .timer.low{color:var(--bad)}
-.simbar{position:sticky;top:calc(60px + env(safe-area-inset-top,0px));z-index:10;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.simbar{position:sticky;top:calc(60px + var(--sa-top));z-index:10;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
 .simbar .grow{flex:1}
 .cartao{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:5px}
 .simrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
@@ -245,10 +245,15 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
 /* ===== Mobile ===== */
 @media (max-width:900px){
   .grid{grid-template-columns:minmax(0,1fr);gap:12px}
-  .topbar{gap:8px;padding:calc(8px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px)) 8px calc(12px + env(safe-area-inset-left,0px))}
-  .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  .topbar{gap:8px;padding:calc(8px + var(--sa-top)) calc(12px + var(--sa-right)) 8px calc(12px + var(--sa-left))}
+  .toast{bottom:calc(84px + var(--sa-bottom))}
   .brand-text small{display:none}
-  .mainnav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);margin:0;padding:4px 4px calc(4px + env(safe-area-inset-bottom,0px));justify-content:space-around}
+  .brand{min-width:0;flex:1 1 auto}
+  .brand-mark{flex:none}
+  .brand-text{min-width:0}
+  .brand-text b{overflow:hidden;text-overflow:ellipsis}
+  .topright{flex:none}
+  .mainnav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);margin:0;padding:4px 4px calc(4px + var(--sa-bottom));justify-content:space-around}
   .mainnav a{flex-direction:column;gap:1px;padding:6px 4px;font-size:10.5px;min-width:52px}
   .mainnav .ic{font-size:18px}
   .wrap{padding:12px 12px 90px}
@@ -262,7 +267,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
   .opt{grid-template-columns:28px minmax(0,1fr);gap:10px;padding:12px;min-height:52px}
   .opt .mk{grid-column:2;padding-top:0}
   .opt .mk:empty{display:none}
-  .simbar{top:calc(56px + env(safe-area-inset-top,0px))}
+  .simbar{top:calc(56px + var(--sa-top))}
   .texto{font-size:calc(var(--fs) - 1.5px);padding:10px 12px}
   .score-big{font-size:36px}
   .qtools{margin-left:0;width:100%}
@@ -280,7 +285,7 @@ body.auth .topbar,body.auth .mainnav{display:none}
 .instalar p{margin:0;font-size:13.5px}
 .instalar .row{margin-top:10px}
 .instalar .x{margin-left:auto;background:none;border:0;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:2px 4px}
-body.auth .login{padding-top:env(safe-area-inset-top,0px)}
+body.auth .login{padding-top:var(--sa-top)}
 </style>
 </head>
 <body>
@@ -379,7 +384,15 @@ function modal(html, onOpen) { const m = $('modal'), box = m.querySelector('.mod
 function closeModal() { $('modal').hidden = true; }
 function mostrarTexto(titulo, txt) { modal(`<h3>${esc(titulo)}</h3><p class="small muted">Selecione e copie o texto abaixo.</p><textarea class="inp" id="mtTa" style="width:100%;min-height:120px" readonly></textarea><div class="row" style="margin-top:10px"><button class="btn" data-close>Fechar</button></div>`, box => { const ta = box.querySelector('#mtTa'); ta.value = txt; ta.focus(); ta.select(); }); }
 function confirmar(msg, onYes, rotulo) { modal(`<p>${esc(msg)}</p><div class="row"><button class="btn danger" id="mYes">${esc(rotulo || 'Confirmar')}</button><button class="btn" data-close>Cancelar</button></div>`, box => { box.querySelector('#mYes').onclick = () => { closeModal(); onYes(); }; }); }
-function applyTheme() { document.documentElement.dataset.theme = st.theme === 'auto' ? '' : st.theme; document.documentElement.dataset.fs = st.fs; }
+function applyTheme() {
+  document.documentElement.dataset.theme = st.theme === 'auto' ? '' : st.theme; document.documentElement.dataset.fs = st.fs;
+  // app nativo: ícones das barras do sistema (relógio, bateria) claros no tema escuro e escuros no claro
+  const SB = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SystemBars;
+  // WebView < 140 no Android não desenha por trás das barras (áreas seguras = 0): a faixa é o fundo nativo, escuro → ícones claros sempre.
+  if (SB && SB.setStyle) { const t = document.createElement('div'); t.style.cssText = 'position:fixed;visibility:hidden;top:0;height:var(--sa-top)'; document.body.appendChild(t); const recuo = /Android/.test(navigator.userAgent) && t.offsetHeight === 0; t.remove();
+    const escuro = recuo || st.theme === 'dark' || (st.theme === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches); SB.setStyle({ style: escuro ? 'DARK' : 'LIGHT' }).catch(() => {}); }
+}
+if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (st.theme === 'auto') applyTheme(); });
 const concDe = q => q.conc.includes(st.conc);
 const poolConc = () => Q.filter(concDe);
 const discsDoConc = () => CONC[st.conc].disciplinas.map(n => DISC.indexOf(n));
@@ -933,7 +946,7 @@ function vConfig(main) {
         <label class="small"><input type="checkbox" id="cfgCom"> mostrar o comentário automaticamente após responder</label>
       </section>
       <section class="card stack"><h2>Backup do progresso</h2>
-        <p class="small muted">O progresso fica salvo só neste navegador. Exporte um arquivo para guardar ou levar para outro aparelho.</p>
+        <p class="small muted">O progresso fica salvo só ${NATIVO ? 'neste aparelho' : 'neste navegador'}. Exporte um arquivo para guardar ou levar para outro aparelho.</p>
         <div class="row"><button class="btn" id="expBtn">Exportar (.json)</button><label class="btn">Importar <input type="file" id="impFile" accept="application/json" hidden></label></div>
         <div class="row"><button class="btn danger" id="zerarTudo">Apagar todo o progresso</button></div>
       </section>
@@ -954,6 +967,7 @@ function vConfig(main) {
   $('cfgCom').onchange = e => { st.comentAuto = e.target.checked; save(); };
   $('expBtn').onclick = async () => {
     const data = JSON.stringify(st), filename = `rn-questoes-progresso-${new Date().toISOString().slice(0, 10)}.json`;
+    if (NATIVO) { try { const P = window.Capacitor.Plugins, w = await P.Filesystem.writeFile({ path: filename, data, directory: 'CACHE', encoding: 'utf8' }); await P.Share.share({ title: 'Backup do progresso', url: w.uri, dialogTitle: 'Salvar o backup em…' }); return; } catch (e) { if (e && /cancel/i.test(e.message || '')) return; } }
     try { const dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; if (dl) { await dl.save({ filename, data }); toast('Arquivo salvo.'); return; } } catch (e) {}
     try { const b = new Blob([data], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = filename; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); } catch (e) {}
     mostrarTexto('Backup do progresso (copie e guarde num arquivo .json)', data);
@@ -1004,10 +1018,10 @@ function telaLogin() {
       <p class="small muted" style="margin:6px 0 16px">Plataforma de questões do professor Riccardo Nóbrega. Acesso restrito a convidados.</p>
       <div class="fgroup"><label for="loginU">Usuário</label><input class="inp" id="loginU" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required></div>
       <div class="fgroup" style="margin-top:10px"><label for="loginP">Senha</label><input class="inp" id="loginP" name="password" type="password" autocomplete="current-password" required></div>
-      <label class="small" style="display:block;margin:12px 0"><input type="checkbox" id="loginLembrar"> manter conectado neste navegador por 30 dias</label>
+      <label class="small" style="display:block;margin:12px 0"><input type="checkbox" id="loginLembrar"> manter conectado ${NATIVO ? 'neste aparelho' : 'neste navegador'} por 30 dias</label>
       <div class="notice bad" id="loginErro" hidden></div>
       <div class="row" style="margin-top:12px"><button class="btn primary" id="loginBtn" type="submit">Entrar</button></div>
-      <p class="hint" style="margin-top:16px">Protótipo em avaliação. O progresso de estudo fica salvo apenas neste navegador.</p>
+      <p class="hint" style="margin-top:16px">Protótipo em avaliação. O progresso de estudo fica salvo apenas ${NATIVO ? 'neste aparelho' : 'neste navegador'}.</p>
     </form></div>`;
     $('loginU').focus();
     $('loginForm').onsubmit = async e => {
