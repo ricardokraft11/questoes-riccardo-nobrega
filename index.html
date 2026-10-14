@@ -79,7 +79,7 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-b
 .rn-cabecalho{display:flex;align-items:center;gap:16px;padding:calc(10px + var(--sa-top)) calc(16px + var(--sa-right)) 10px calc(16px + var(--sa-left));background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
 .rn-marca{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
 .rn-marca-ic{font-family:var(--display);font-weight:700;background:var(--ink);color:var(--accent);border-radius:8px;width:36px;height:36px;display:grid;place-items:center;font-size:16px;letter-spacing:.02em}
-.rn-marca-tx{display:flex;flex-direction:column;line-height:1.05}
+.rn-marca-tx{display:flex;flex-direction:column;gap:4px;line-height:1.1}
 .rn-marca-tx b{font-family:var(--display);font-size:16px;font-weight:700;white-space:nowrap}
 .rn-marca-tx small{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .rn-abas{display:flex;gap:2px;margin-left:8px;flex:1}
@@ -1348,7 +1348,7 @@ function telaLogin() {
 // =================================================================== versão nova
 // Uma aba aberta (ou o app instalado) continua com o código que carregou. Ao abrir, a cada 15 min e ao voltar
 // para a aba, compara o BUILD embutido com dist/versao.json e oferece atualizar.
-const BUILD = 'b761d3ad74c4';
+const BUILD = 'cdafeed7bdc6';
 let avisouVersao = false;
 function checarVersao() {
   if (avisouVersao || NATIVO || !/^https?:$/.test(location.protocol) || /claude\.(ai|site)/.test(location.host)) return;
