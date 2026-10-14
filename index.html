@@ -11,6 +11,17 @@
 <meta name="apple-mobile-web-app-title" content="Questões RN">
 <meta name="format-detection" content="telephone=no">
 <title>Plataforma de Questões · Professor Riccardo Nóbrega</title>
+<!-- prévia do link no WhatsApp/Instagram/Telegram; troque a URL base quando a plataforma ganhar domínio próprio -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Professor Riccardo Nóbrega">
+<meta property="og:title" content="Plataforma de Questões · Professor Riccardo Nóbrega">
+<meta property="og:description" content="Questões comentadas, simulados por edital, flashcards e acompanhamento de desempenho. Carreira policial e jurídica.">
+<meta property="og:image" content="https://ricardokraft11.github.io/questoes-riccardo-nobrega/assets/compartilhar.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="1200">
+<meta property="og:image:alt" content="Plataforma de Questões para Concursos, carreira policial e jurídica, com o professor Riccardo Nóbrega">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
@@ -372,7 +383,14 @@ details[open]>summary .mi-ch{transform:rotate(90deg)}
 .tema-seg button[aria-checked="true"]{background:var(--ink);color:var(--bg)}
 .tema-seg button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 @media (hover:hover){.tema-seg button:not([aria-checked="true"]):hover{color:var(--ink)}}
-@media (max-width:380px){.login-top .rn-marca-tx b{font-size:14px}}
+@media (max-width:460px){.login-top .rn-marca-tx{display:none}}
+
+/* ===== arte de divulgação ===== */
+.banner{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#0b0d10;box-shadow:var(--shadow)}
+.banner img{display:block;width:100%;height:auto;aspect-ratio:1200/480}
+@media (max-width:700px){.banner img{aspect-ratio:840/450}.banner{border-radius:12px}}
+.login{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.banner-login{width:100%;max-width:980px}
 </style>
 </head>
 <body>
@@ -618,6 +636,9 @@ const MKEY = 'rn-menu-aberto';
 // filtros combináveis da seção "Opções" do Início (não alteram st.f até o aluno clicar em Resolver)
 let opcInicio = { status: 'all', nivel: '', tipo: '' };
 function irResolver(f) { st.f = Object.assign({}, DEF.f, f); st.cur = null; st.pag = 0; save(); location.hash = '#resolver'; }
+// arte de divulgação: completa no desktop/tablet; no celular, recorte com título e professor (legível em 390 px)
+const ALT_BANNER = 'Plataforma de Questões para Concursos, carreira policial e jurídica. Estude com Riccardo Nóbrega: questões comentadas, simulados por edital, acompanhamento de desempenho, estude no computador ou no celular.';
+const banner = (cls = '') => `<picture class="banner ${cls}"><source media="(max-width: 700px)" srcset="assets/banner-celular.webp" width="840" height="450"><img src="assets/banner-1200.webp" srcset="assets/banner-1200.webp 1200w, assets/banner-1983.webp 1983w" sizes="(max-width: 1240px) 100vw, 1200px" width="1200" height="480" alt="${ALT_BANNER}" decoding="async"></picture>`;
 function vInicio(main) {
   const c = CONC[st.conc], pool = poolConc(), discs = discsDoConc();
   const resp = pool.filter(q => st.ans[q.id]), oks = resp.filter(q => st.ans[q.id].ok).length;
@@ -682,6 +703,7 @@ function vInicio(main) {
 
   main.innerHTML = `
   <div class="stack">
+    ${banner()}
     <div><div class="eyebrow">${esc(c.edital)}</div><h1>${esc(c.nome)}</h1>
       <p class="muted small" style="margin:6px 0 0">${esc(c.formato)} · prova: ${esc(c.provaTexto)}${prazo !== null ? ` · <b>${prazo > 0 ? `faltam ${prazo} dias` : prazo === 0 ? 'é hoje' : 'já realizada'}</b>` : ''}</p></div>
     ${avisoInstalar(true)}
@@ -1341,7 +1363,7 @@ function telaLogin() {
   return new Promise(resolve => {
     loginAberto = true; document.body.classList.add('auth');
     const main = $('main'); let falhas = 0, bloqueadoAte = 0;
-    main.innerHTML = `<div class="login"><form class="login-box" id="loginForm" autocomplete="on">
+    main.innerHTML = `<div class="login">${banner('banner-login')}<form class="login-box" id="loginForm" autocomplete="on">
       <div class="login-top"><div class="rn-marca"><span class="rn-marca-ic">RN</span><span class="rn-marca-tx"><b>Professor Riccardo Nóbrega</b><small>Plataforma de questões</small></span></div>${seletorTema()}</div>
       <h1 style="font-size:24px">Plataforma de Questões</h1>
       <p class="small muted" style="margin:6px 0 16px">Plataforma de questões do professor Riccardo Nóbrega. Acesso restrito a convidados.</p>
@@ -1373,7 +1395,7 @@ function telaLogin() {
 // =================================================================== versão nova
 // Uma aba aberta (ou o app instalado) continua com o código que carregou. Ao abrir, a cada 15 min e ao voltar
 // para a aba, compara o BUILD embutido com dist/versao.json e oferece atualizar.
-const BUILD = '5c8f56b90420';
+const BUILD = '5dcb68edf521';
 let avisouVersao = false;
 function checarVersao() {
   if (avisouVersao || NATIVO || !/^https?:$/.test(location.protocol) || /claude\.(ai|site)/.test(location.host)) return;
