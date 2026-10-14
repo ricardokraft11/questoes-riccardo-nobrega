@@ -1240,6 +1240,15 @@ function telaLogin() {
 // =================================================================== início
 (async function iniciar() {
   applyTheme();
+  // app nativo (Android): o WebView não enxerga as entradas criadas por pushState (canGoBack = false), então o
+  // botão/gesto "voltar" do sistema é tratado aqui: fecha a janela aberta, volta no histórico da plataforma ou,
+  // no Início, fecha o app.
+  const APP = NATIVO && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+  if (APP) APP.addListener('backButton', () => {
+    if (!$('modal').hidden) { closeModal(); return; }
+    const h = history.state, raiz = /^#?(inicio)?$/.test(location.hash) && !(h && h.k > 0);
+    if (raiz || document.body.classList.contains('auth')) APP.exitApp(); else history.back();
+  });
   if (BANK.auth && Array.isArray(BANK.auth.usuarios) && BANK.auth.usuarios.length && !sessao()) await telaLogin();
   initConc(); route();
   if (!NATIVO && 'serviceWorker' in navigator && location.protocol.startsWith('http') && !/claude\.(ai|site)/.test(location.host)) navigator.serviceWorker.register('sw.js').catch(() => {});
