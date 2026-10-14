@@ -501,13 +501,30 @@ const VIEWS = { inicio: vInicio, resolver: vResolver, simulado: vSimulado, flash
 let view = 'inicio', param = '';
 function route() {
   const h = location.hash.replace(/^#\/?/, '') || 'inicio'; const [v, ...rest] = h.split('.'); param = rest.join('.');
-  if (v === 'q' && param) { const q = BY_ID.get(param); if (q) { st.cur = q.id; st.f = Object.assign({}, DEF.f, { busca: q.id }); if (!concDe(q)) st.conc = q.conc[0]; save(); location.hash = '#resolver'; return; } }
+  if (v === 'q' && param) { const q = BY_ID.get(param); if (q) { st.cur = q.id; st.f = Object.assign({}, DEF.f, { busca: q.id }); if (!concDe(q)) st.conc = q.conc[0]; save(); history.replaceState(null, '', '#resolver'); route(); return; } }
   view = VIEWS[v] ? v : 'inicio';
   document.querySelectorAll('.mainnav a, .topright a').forEach(a => a.classList.toggle('on', a.dataset.view === view));
   window.scrollTo({ top: 0 });
   render();
 }
-function render() { const main = $('main'); main.innerHTML = ''; VIEWS[view](main); }
+function render() { const main = $('main'); main.innerHTML = ''; mostrarQ = null; VIEWS[view](main); }
+// ------------------------------------------------- voltar entre questões (gesto/botão "voltar" do celular)
+// Cada questão visitada vira uma entrada do histórico do navegador (mesmo hash, estado {v, nq, k, ant}).
+// O "voltar" do aparelho reabre a questão anterior em vez de sair da tela; da primeira questão, sai.
+let mostrarQ = null;                               // definido pela tela ativa: (chave) => mostra a questão
+const vk = () => view + '.' + param;
+function marcarQ(chave) { // a tela mostrou `chave` sem navegação do usuário: só anota no estado atual
+  const h = history.state, mesma = h && h.v === vk();
+  if (!mesma || h.nq !== chave) history.replaceState({ v: vk(), nq: chave, k: mesma ? h.k : 0, ant: mesma ? h.ant : null }, '', location.hash);
+}
+function irQ(chave, mostrar) { // navegação do usuário (próxima, anterior, mapa, teclado)
+  const h = history.state, mesma = h && h.v === vk();
+  if (mesma && h.k > 0 && h.ant === chave) { history.back(); return; } // é a questão de onde veio: igual ao gesto
+  history.pushState({ v: vk(), nq: chave, k: (mesma ? h.k : 0) + 1, ant: mesma ? h.nq : null }, '', location.hash);
+  mostrar(chave);
+}
+window.addEventListener('popstate', e => { const h = e.state; if (h && h.v === vk() && h.nq !== undefined && h.nq !== null && mostrarQ) mostrarQ(h.nq); });
+
 window.addEventListener('hashchange', route);
 
 // ------------------------------------------------------------------ seletor de concurso
@@ -759,9 +776,11 @@ function vResolver(main) {
     if (!l.length) { card.innerHTML = `<div class="empty"><p><b>Nenhuma questão neste filtro.</b></p><p>${f.status === 'bad' ? 'Você ainda não errou nenhuma questão aqui.' : f.status === 'new' ? 'Todas as questões deste filtro já foram respondidas.' : f.status === 'srs' ? 'Nada a revisar neste filtro por enquanto.' : 'Ajuste os filtros.'}</p></div>`; renderDots(l, -1); return; }
     let idx = l.findIndex(q => q.id === st.cur); if (idx < 0) { idx = 0; st.cur = l[0].id; save(); }
     renderCard(card, l[idx], { pos: `${idx + 1} de ${l.length}`, prev: idx > 0 ? () => go(l, idx - 1) : null, next: idx < l.length - 1 ? () => go(l, idx + 1) : null, onAnswer: () => { renderDiscs(); renderDots(l, idx); }, modo: 'e' });
-    renderDots(l, idx);
+    renderDots(l, idx); marcarQ(l[idx].id);
   }
-  function go(l, i) { if (i < 0 || i >= l.length) return; st.cur = l[i].id; st.pag = Math.floor(i / 100); save(); renderQ(); $('card').scrollIntoView({ block: 'start' }); }
+  function abrir(id) { const l = lista(), i = l.findIndex(q => q.id === id); if (i >= 0) { st.cur = id; st.pag = Math.floor(i / 100); save(); } renderQ(); $('card').scrollIntoView({ block: 'start' }); }
+  mostrarQ = abrir;
+  function go(l, i) { if (i < 0 || i >= l.length) return; irQ(l[i].id, abrir); }
   function renderDots(l, idx) {
     const PAGE = 100, pages = Math.ceil(l.length / PAGE); if (idx >= 0) st.pag = Math.floor(idx / PAGE); if (st.pag >= pages) st.pag = Math.max(0, pages - 1);
     $('palTitle').textContent = `Questões do filtro (${l.length})`;
@@ -863,8 +882,10 @@ function vRevisao(main) {
   let i = 0; const card = $('card');
   function show() {
     if (i >= due.length) { card.innerHTML = `<div class="empty"><p><b>Revisão do dia concluída.</b></p><p>${due.length} questões revistas.</p><a class="btn primary" href="#inicio">Voltar ao início</a></div>`; $('revNav').innerHTML = ''; return; }
-    const q = due[i]; renderCard(card, q, { pos: `Revisão ${i + 1} de ${due.length}`, prev: i > 0 ? () => { i--; show(); } : null, next: () => { i++; show(); }, modo: 'r', reaberta: true });
+    const q = due[i]; marcarQ(i); renderCard(card, q, { pos: `Revisão ${i + 1} de ${due.length}`, prev: i > 0 ? () => irQ(i - 1, ir) : null, next: () => irQ(i + 1, ir), modo: 'r', reaberta: true });
   }
+  function ir(k) { i = Math.max(0, Math.min(due.length, +k)); show(); }
+  mostrarQ = ir;
   show();
 }
 
@@ -1020,11 +1041,14 @@ function simRodar(main, s) {
   timerI = setInterval(tick, 1000);
   function show() {
     s.i = i; const q = BY_ID.get(s.ids[i]); const card = $('card');
-    renderCard(card, q, { pos: `Questão ${i + 1} de ${s.ids.length}`, prev: i > 0 ? () => { i--; show(); } : null, next: i < s.ids.length - 1 ? () => { i++; show(); } : null, modo: 's', simulado: { resp: s.resp, locked: false, onPick: L => { s.resp[q.id] = s.resp[q.id] === L ? undefined : L; save(); show(); } } });
+    renderCard(card, q, { pos: `Questão ${i + 1} de ${s.ids.length}`, prev: i > 0 ? () => irQ(i - 1, ir) : null, next: i < s.ids.length - 1 ? () => irQ(i + 1, ir) : null, modo: 's', simulado: { resp: s.resp, locked: false, onPick: L => { s.resp[q.id] = s.resp[q.id] === L ? undefined : L; save(); show(); } } });
     const n = Object.values(s.resp).filter(Boolean).length; $('simProg').textContent = `${n} de ${s.ids.length} respondidas`;
-    const ct = $('cartao'); ct.innerHTML = ''; s.ids.forEach((id, k) => { const b = el(`<button class="dot ${s.resp[id] ? 'm' : ''} ${k === i ? 'cur' : ''}">${k + 1}${s.resp[id] ? '·' + s.resp[id] : ''}</button>`); b.onclick = () => { i = k; show(); window.scrollTo({ top: 0 }); }; ct.appendChild(b); });
+    const ct = $('cartao'); ct.innerHTML = ''; s.ids.forEach((id, k) => { const b = el(`<button class="dot ${s.resp[id] ? 'm' : ''} ${k === i ? 'cur' : ''}">${k + 1}${s.resp[id] ? '·' + s.resp[id] : ''}</button>`); b.onclick = () => { irQ(k, ir); window.scrollTo({ top: 0 }); }; ct.appendChild(b); });
     card._responder = L => { s.resp[q.id] = L; save(); show(); };
+    marcarQ(i);
   }
+  function ir(k) { i = Math.max(0, Math.min(s.ids.length - 1, +k)); show(); }
+  mostrarQ = ir;
   function finalizar(auto) {
     const vazias = s.ids.filter(id => !s.resp[id]).length;
     const go = () => { clearInterval(timerI); s.fim = Date.now(); s.ids.forEach(id => { const q = BY_ID.get(id); if (s.resp[id]) registrar(q, s.resp[id], 's'); }); s.res = resultado(s); save(); render(); window.scrollTo({ top: 0 }); };
@@ -1055,7 +1079,8 @@ function simResultado(main, s) {
     <section class="card"><h2>Gabarito comentado</h2><div class="cartao" id="cartao" style="margin-top:10px"></div><article class="card" id="card" style="margin-top:14px"></article></section>
   </div>`;
   let i = 0; const ct = $('cartao');
-  function show() { const q = BY_ID.get(s.ids[i]); renderCard($('card'), q, { pos: `Questão ${i + 1} de ${total}`, prev: i > 0 ? () => { i--; show(); } : null, next: i < total - 1 ? () => { i++; show(); } : null, simulado: { resp: s.resp, locked: true, onPick: () => {} } }); ct.innerHTML = ''; s.ids.forEach((id, k) => { const q = BY_ID.get(id), ok = s.resp[id] === q.g; const b = el(`<button class="dot ${s.resp[id] ? (ok ? 'g' : 'r') : ''} ${k === i ? 'cur' : ''}">${k + 1}</button>`); b.onclick = () => { i = k; show(); $('card').scrollIntoView({ block: 'start' }); }; ct.appendChild(b); }); }
+  function ir(k) { i = Math.max(0, Math.min(total - 1, +k)); show(); } mostrarQ = ir;
+  function show() { const q = BY_ID.get(s.ids[i]); marcarQ(i); renderCard($('card'), q, { pos: `Questão ${i + 1} de ${total}`, prev: i > 0 ? () => irQ(i - 1, ir) : null, next: i < total - 1 ? () => irQ(i + 1, ir) : null, simulado: { resp: s.resp, locked: true, onPick: () => {} } }); ct.innerHTML = ''; s.ids.forEach((id, k) => { const q = BY_ID.get(id), ok = s.resp[id] === q.g; const b = el(`<button class="dot ${s.resp[id] ? (ok ? 'g' : 'r') : ''} ${k === i ? 'cur' : ''}">${k + 1}</button>`); b.onclick = () => { irQ(k, ir); $('card').scrollIntoView({ block: 'start' }); }; ct.appendChild(b); }); }
   show();
   $('refazer').onclick = () => { const ids = s.ids.filter(id => s.resp[id] !== BY_ID.get(id).g); if (!ids.length) return toast('Você acertou todas.'); const n = { id: Date.now().toString(36), nome: `Erros de: ${s.nome}`, conc: s.conc, ids, resp: {}, seg: 0, ini: Date.now(), gasto: 0, fim: null, oficial: false, i: 0 }; st.simulados.push(n); save(); location.hash = '#simulado.' + n.id; };
 }
