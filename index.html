@@ -359,6 +359,10 @@ details[open]>summary .mi-ch{transform:rotate(90deg)}
 .lnk.tend{cursor:default}
 .lnk.tend:hover{background:none}
 @media (max-width:600px){.hide-sm{display:none}}
+
+/* ===== diagnóstico (?diag) ===== */
+.diag{position:fixed;left:8px;right:8px;top:8px;z-index:9999;background:#111;color:#eee;border:2px solid #E2A64A;border-radius:10px;padding:10px 12px;font-size:12px;max-height:80vh;overflow:auto}
+.diag pre{white-space:pre-wrap;word-break:break-all;font-family:var(--mono);font-size:11.5px;margin:6px 0}
 </style>
 </head>
 <body>
@@ -528,7 +532,8 @@ let view = 'inicio', param = '';
 function route() {
   // Com a tela de login aberta, nenhuma navegação (voltar/avançar do aparelho, link) pode desenhar outra tela:
   // antes, voltar a partir do login abria a plataforma sem as barras e sem passar pelo login.
-  if (document.body.classList.contains('auth')) return;
+  if (loginAberto) return;
+  document.body.classList.remove('auth'); // garante as barras fora da tela de login
   if (exigeLogin() && !sessao()) { location.reload(); return; } // sessão expirou durante o uso
   const h = location.hash.replace(/^#\/?/, '') || 'inicio'; const [v, ...rest] = h.split('.'); param = rest.join('.');
   if (v === 'q' && param) { const q = BY_ID.get(param); if (q) { st.cur = q.id; st.f = Object.assign({}, DEF.f, { busca: q.id }); if (!concDe(q)) st.conc = q.conc[0]; save(); history.replaceState(null, '', '#resolver'); route(); return; } }
@@ -1304,9 +1309,10 @@ async function pbkdf2(senha, saltHex, iter) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(senha), 'PBKDF2', false, ['deriveBits']);
   return hex(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: unhex(saltHex), iterations: iter, hash: 'SHA-256' }, key, 256));
 }
+let loginAberto = false;
 function telaLogin() {
   return new Promise(resolve => {
-    document.body.classList.add('auth');
+    loginAberto = true; document.body.classList.add('auth');
     const main = $('main'); let falhas = 0, bloqueadoAte = 0;
     main.innerHTML = `<div class="login"><form class="login-box" id="loginForm" autocomplete="on">
       <div class="rn-marca" style="margin-bottom:18px"><span class="rn-marca-ic">RN</span><span class="rn-marca-tx"><b>Professor Riccardo Nóbrega</b><small>Plataforma de questões</small></span></div>
@@ -1331,7 +1337,7 @@ function telaLogin() {
       if (!ok) { falhas++; if (falhas >= 5) { bloqueadoAte = Date.now() + 60000; falhas = 0; } err.textContent = 'Usuário ou senha incorretos.'; err.hidden = false; $('loginP').value = ''; $('loginP').focus(); return; }
       const lembrar = $('loginLembrar').checked, sess = { u, nome: reg.nome, exp: Date.now() + (lembrar ? 30 : 0.5) * DAY };
       try { (lembrar ? localStorage : sessionStorage).setItem(SKEY, JSON.stringify(sess)); } catch (x) {}
-      document.body.classList.remove('auth'); resolve(sess);
+      loginAberto = false; document.body.classList.remove('auth'); resolve(sess);
     };
   });
 }
@@ -1339,7 +1345,7 @@ function telaLogin() {
 // =================================================================== versão nova
 // Uma aba aberta (ou o app instalado) continua com o código que carregou. Ao abrir, a cada 15 min e ao voltar
 // para a aba, compara o BUILD embutido com dist/versao.json e oferece atualizar.
-const BUILD = '135ea0e3f018';
+const BUILD = 'da84fa007be4';
 let avisouVersao = false;
 function checarVersao() {
   if (avisouVersao || NATIVO || !/^https?:$/.test(location.protocol) || /claude\.(ai|site)/.test(location.host)) return;
@@ -1348,6 +1354,30 @@ function checarVersao() {
     const b = el(`<div class="atualizar" role="status"><span>Há uma versão nova da plataforma.</span><button class="btn primary sm" id="atualizarBtn">Atualizar</button></div>`);
     document.body.appendChild(b); $('atualizarBtn').onclick = () => location.reload();
   }).catch(() => {});
+}
+
+// =================================================================== diagnóstico (?diag no endereço)
+// Mostra como o navegador está tratando a barra superior/navegação, para investigar aparelhos que não
+// reproduzem os testes. Os elementos de teste distinguem esconder por tag, por classe ou pelo modo de login.
+function mostrarDiag() {
+  const vis = e => { if (!e) return 'ausente'; const c = getComputedStyle(e); return `${c.display}/${c.visibility}/op${c.opacity}/h${Math.round(e.getBoundingClientRect().height)}`; };
+  const teste = document.createElement('div'); teste.style.cssText = 'position:absolute;left:-9999px;top:0';
+  teste.innerHTML = '<header class="rn-cabecalho" id="dg1">a</header><header class="dg-neutro" id="dg2">b</header><div class="rn-cabecalho" id="dg3">c</div><nav class="rn-abas" id="dg4">d</nav><div class="topbar" id="dg5">e</div>';
+  document.body.appendChild(teste);
+  const h = document.querySelector('header'), n = document.querySelector('header nav');
+  const linhas = [
+    ['versão', BUILD], ['endereço', location.href], ['navegador', navigator.userAgent], ['tela', `${innerWidth}×${innerHeight} · dpr ${devicePixelRatio}`],
+    ['body', `"${document.body.className}" · login aberto: ${loginAberto} · sessão: ${sessao() ? 'sim' : 'não'}`],
+    ['barra', `${h ? h.className : 'sem header'} → ${vis(h)}`], ['navegação', vis(n)],
+    ['teste header.rn-cabecalho', vis($('dg1'))], ['teste header neutro', vis($('dg2'))], ['teste div.rn-cabecalho', vis($('dg3'))], ['teste nav.rn-abas', vis($('dg4'))], ['teste div.topbar', vis($('dg5'))],
+    ['service worker', navigator.serviceWorker && navigator.serviceWorker.controller ? 'controlando' : 'não'], ['folhas de estilo', [...document.styleSheets].length + ' · adotadas ' + (document.adoptedStyleSheets || []).length],
+  ];
+  teste.remove();
+  const txtD = linhas.map(([k, v]) => `${k}: ${v}`).join('\n');
+  const box = el(`<div class="diag"><b>Diagnóstico</b><pre>${esc(txtD)}</pre><div class="row"><button class="btn sm" id="diagCopiar">Copiar</button><button class="btn sm" id="diagFechar">Fechar</button></div></div>`);
+  document.body.appendChild(box);
+  $('diagFechar').onclick = () => box.remove();
+  $('diagCopiar').onclick = () => { try { navigator.clipboard.writeText(txtD).then(() => toast('Diagnóstico copiado.')); } catch (e) { mostrarTexto('Diagnóstico', txtD); } };
 }
 
 // =================================================================== início
@@ -1365,6 +1395,7 @@ function checarVersao() {
   if (exigeLogin() && !sessao()) await telaLogin();
   initConc(); route();
   if (!NATIVO && 'serviceWorker' in navigator && location.protocol.startsWith('http') && !/claude\.(ai|site)/.test(location.host)) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (/[?&]diag\b/.test(location.search)) setTimeout(mostrarDiag, 800);
   checarVersao(); setInterval(checarVersao, 15 * 60000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checarVersao(); });
 })();
