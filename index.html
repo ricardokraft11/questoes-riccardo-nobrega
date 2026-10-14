@@ -341,6 +341,10 @@ details[open]>summary .mi-ch{transform:rotate(90deg)}
 .fc-n0{border-color:var(--bad)!important}.fc-n0 b{color:var(--bad)}
 .fc-n3{border-color:var(--ok)!important}.fc-n3 b{color:var(--ok)}
 @media (max-width:520px){.fc-notas{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ===== aviso de versão nova ===== */
+.atualizar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + var(--sa-bottom));z-index:60;display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--bg);padding:10px 12px 10px 16px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:14px;width:max-content;max-width:calc(100vw - 24px)}
+@media (max-width:900px){.atualizar{bottom:calc(84px + var(--sa-bottom))}}
 </style>
 </head>
 <body>
@@ -457,8 +461,13 @@ const rotuloQ = q => q.origem === 'banca' ? `${q.banca} ${q.ano}` : q.estilo.rep
 
 // ------------------------------------------------------------------ filtro de questões (vista Resolver)
 let cacheKey = '', cacheList = [];
+// Questões já vistas com o filtro atual continuam na lista mesmo que deixem de atender à situação (ex.: em
+// "Não resolvidas", a respondida não some): a posição avança normalmente e o "voltar" consegue reabri-las.
+let vistas = { chave: '', ids: new Set() };
+function fixarVista(id) { const ch = JSON.stringify([st.conc, st.f]); if (vistas.chave !== ch) vistas = { chave: ch, ids: new Set() }; if (!vistas.ids.has(id)) { vistas.ids.add(id); cacheKey = ''; } }
 function lista() {
-  const f = st.f, k = JSON.stringify([st.conc, f, Object.keys(st.ans).length, Object.keys(st.fav).length, Object.keys(st.srs).length]);
+  const fixas = vistas.chave === JSON.stringify([st.conc, st.f]) ? vistas.ids : new Set();
+  const f = st.f, k = JSON.stringify([st.conc, f, Object.keys(st.ans).length, Object.keys(st.fav).length, Object.keys(st.srs).length, fixas.size]);
   if (k === cacheKey) return cacheList;
   const busca = f.busca.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   let l = Q.filter(q => (concDe(q) || (f.prova && q.prova === f.prova))
@@ -472,13 +481,13 @@ function lista() {
     && (!f.prova || q.prova === f.prova)
     && (!busca || q.s.includes(busca) || q.id.includes(busca)));
   const now = Date.now();
-  if (f.status === 'new') l = l.filter(q => !st.ans[q.id]);
-  else if (f.status === 'done') l = l.filter(q => st.ans[q.id]);
-  else if (f.status === 'bad') l = l.filter(q => st.ans[q.id] && !st.ans[q.id].ok);
-  else if (f.status === 'ok') l = l.filter(q => st.ans[q.id] && st.ans[q.id].ok);
-  else if (f.status === 'fav') l = l.filter(q => st.fav[q.id]);
-  else if (f.status === 'notes') l = l.filter(q => st.notes[q.id]);
-  else if (f.status === 'srs') l = l.filter(q => st.srs[q.id] && st.srs[q.id].due <= now);
+  if (f.status === 'new') l = l.filter(q => !st.ans[q.id] || fixas.has(q.id));
+  else if (f.status === 'done') l = l.filter(q => st.ans[q.id] || fixas.has(q.id));
+  else if (f.status === 'bad') l = l.filter(q => (st.ans[q.id] && !st.ans[q.id].ok) || fixas.has(q.id));
+  else if (f.status === 'ok') l = l.filter(q => (st.ans[q.id] && st.ans[q.id].ok) || fixas.has(q.id));
+  else if (f.status === 'fav') l = l.filter(q => st.fav[q.id] || fixas.has(q.id));
+  else if (f.status === 'notes') l = l.filter(q => st.notes[q.id] || fixas.has(q.id));
+  else if (f.status === 'srs') l = l.filter(q => (st.srs[q.id] && st.srs[q.id].due <= now) || fixas.has(q.id));
   if (f.ordem === 'rand') l = seeded(l, f.seed);
   cacheKey = k; cacheList = l; return l;
 }
@@ -776,7 +785,7 @@ function vResolver(main) {
     if (!l.length) { card.innerHTML = `<div class="empty"><p><b>Nenhuma questão neste filtro.</b></p><p>${f.status === 'bad' ? 'Você ainda não errou nenhuma questão aqui.' : f.status === 'new' ? 'Todas as questões deste filtro já foram respondidas.' : f.status === 'srs' ? 'Nada a revisar neste filtro por enquanto.' : 'Ajuste os filtros.'}</p></div>`; renderDots(l, -1); return; }
     let idx = l.findIndex(q => q.id === st.cur); if (idx < 0) { idx = 0; st.cur = l[0].id; save(); }
     renderCard(card, l[idx], { pos: `${idx + 1} de ${l.length}`, prev: idx > 0 ? () => go(l, idx - 1) : null, next: idx < l.length - 1 ? () => go(l, idx + 1) : null, onAnswer: () => { renderDiscs(); renderDots(l, idx); }, modo: 'e' });
-    renderDots(l, idx); marcarQ(l[idx].id);
+    renderDots(l, idx); marcarQ(l[idx].id); fixarVista(l[idx].id);
   }
   function abrir(id) { const l = lista(), i = l.findIndex(q => q.id === id); if (i >= 0) { st.cur = id; st.pag = Math.floor(i / 100); save(); } renderQ(); $('card').scrollIntoView({ block: 'start' }); }
   mostrarQ = abrir;
@@ -1237,6 +1246,20 @@ function telaLogin() {
   });
 }
 
+// =================================================================== versão nova
+// Uma aba aberta (ou o app instalado) continua com o código que carregou. Ao abrir, a cada 15 min e ao voltar
+// para a aba, compara o BUILD embutido com dist/versao.json e oferece atualizar.
+const BUILD = '5d5b89284c8f';
+let avisouVersao = false;
+function checarVersao() {
+  if (avisouVersao || NATIVO || !/^https?:$/.test(location.protocol) || /claude\.(ai|site)/.test(location.host)) return;
+  fetch('versao.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
+    if (!j || !j.v || j.v === BUILD || avisouVersao) return; avisouVersao = true;
+    const b = el(`<div class="atualizar" role="status"><span>Há uma versão nova da plataforma.</span><button class="btn primary sm" id="atualizarBtn">Atualizar</button></div>`);
+    document.body.appendChild(b); $('atualizarBtn').onclick = () => location.reload();
+  }).catch(() => {});
+}
+
 // =================================================================== início
 (async function iniciar() {
   applyTheme();
@@ -1252,6 +1275,8 @@ function telaLogin() {
   if (BANK.auth && Array.isArray(BANK.auth.usuarios) && BANK.auth.usuarios.length && !sessao()) await telaLogin();
   initConc(); route();
   if (!NATIVO && 'serviceWorker' in navigator && location.protocol.startsWith('http') && !/claude\.(ai|site)/.test(location.host)) navigator.serviceWorker.register('sw.js').catch(() => {});
+  checarVersao(); setInterval(checarVersao, 15 * 60000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checarVersao(); });
 })();
 })();
 </script>
