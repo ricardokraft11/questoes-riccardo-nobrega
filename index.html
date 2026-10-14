@@ -292,6 +292,55 @@ body.auth .topbar,body.auth .mainnav{display:none}
 .instalar .row{margin-top:10px}
 .instalar .x{margin-left:auto;background:none;border:0;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:2px 4px}
 body.auth .login{padding-top:var(--sa-top)}
+/* ===== Início: menu em sanfona ===== */
+.menu{display:flex;flex-direction:column;gap:10px}
+.mi{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.mi>summary{display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer;list-style:none;min-height:64px}
+.mi>summary::-webkit-details-marker,.sub>summary::-webkit-details-marker{display:none}
+.mi>summary:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.mi-ic{flex:none;width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.mi-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.mi-tx b{font-family:var(--display);font-size:calc(var(--fs) + 4px);font-weight:700;line-height:1.15}
+.mi-tx span{font-size:calc(var(--fs) - 2px);color:var(--muted)}
+.mi-ch{flex:none;font-size:22px;line-height:1;color:var(--muted);transition:transform .15s;display:inline-block}
+details[open]>summary .mi-ch{transform:rotate(90deg)}
+.mi[open]{border-color:var(--accent)}
+.mi[open]>summary{border-bottom:1px solid var(--line)}
+.mi-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px}
+.mi-h{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:12px 0 2px;font-weight:500}
+.btn.blk{width:100%;justify-content:center;text-align:center;min-height:46px}
+.lst{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.lnk,.sub>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:46px;padding:10px 14px;background:none;border:0;border-top:1px solid var(--line);color:var(--ink);font:inherit;text-align:left;text-decoration:none;cursor:pointer;list-style:none}
+.lst>:first-child,.lst>:first-child>summary{border-top:0}
+.lnk:hover,.sub>summary:hover{background:var(--surface2)}
+.lnk-n{flex:none;font-family:var(--mono);font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.sub-l{border:0;border-radius:0;border-top:1px solid var(--line);background:var(--surface2)}
+.sub-l .lnk{padding-left:26px;font-size:calc(var(--fs) - 1px)}
+.sub[open]>summary{font-weight:600}
+.opc{display:flex;flex-direction:column;gap:6px}
+.opc-l{font-size:13px;color:var(--muted);margin-top:4px}
+.opc .seg{flex-wrap:wrap}
+.opc .btn.blk{margin-top:8px}
+.prova{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-top:1px solid var(--line)}
+.lst>.prova:first-child{border-top:0}
+.mi-body .tiles{margin:0}
+/* ===== FlashCards ===== */
+.fc-wrap{max-width:760px;margin:0 auto}
+.fc{display:flex;flex-direction:column;gap:14px}
+.fc-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.fc-pos{margin-left:auto;font-family:var(--mono);font-size:13px;color:var(--muted)}
+.fc-q{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.fc-verso{border-top:1px dashed var(--line);padding-top:14px;display:flex;flex-direction:column;gap:10px}
+.fc-res{display:flex;gap:12px;align-items:flex-start;font-size:calc(var(--fs) + 2px);font-weight:600;padding:12px 14px;border-radius:10px;border:1px solid}
+.fc-res.ok{background:var(--ok-bg);border-color:var(--ok)}
+.fc-res.bad{background:var(--bad-bg);border-color:var(--bad)}
+.fc-l{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--ok);color:var(--surface);font-family:var(--mono);font-size:14px}
+.fc-notas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.fc-notas .btn{flex-direction:column;gap:2px;min-height:58px;justify-content:center;text-align:center}
+.fc-notas .btn span{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.fc-n0{border-color:var(--bad)!important}.fc-n0 b{color:var(--bad)}
+.fc-n3{border-color:var(--ok)!important}.fc-n3 b{color:var(--ok)}
+@media (max-width:520px){.fc-notas{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -337,7 +386,7 @@ const DEF = {
   conc: 'sobral', theme: 'auto', fs: 'normal', confirmar: false, comentAuto: true,
   ans: {},      // id -> {a, ok, t, n}   última resposta
   hist: [],     // [t, id, ok, modo]      histórico compacto (estatísticas)
-  fav: {}, notes: {}, risc: {}, srs: {},   // favoritos, anotações, alternativas riscadas, revisão espaçada
+  fav: {}, notes: {}, risc: {}, srs: {}, fc: {},   // favoritos, anotações, alternativas riscadas, revisão espaçada, flashcards
   cadernos: [], simulados: [],
   f: { disc: -1, assunto: '', topico: '', banca: '', tipo: '', nivel: '', origem: '', prova: '', status: 'all', busca: '', ordem: 'orig', seed: 1 },
   cur: null, pag: 0, sideOpen: false,
@@ -355,6 +404,7 @@ function carregarEstado(s) {
   n.hist = Array.isArray(s.hist) ? s.hist.filter(h => Array.isArray(h) && typeof h[0] === 'number' && BY_ID.has(h[1])).slice(-30000).map(h => [h[0], h[1], h[2] ? 1 : 0, str(h[3], 'e').slice(0, 1)]) : [];
   n.fav = obj(s.fav, (k, v) => BY_ID.has(k) && v ? 1 : undefined); n.notes = obj(s.notes, (k, v) => BY_ID.has(k) ? str(v, undefined) : undefined);
   n.risc = obj(s.risc, (k, v) => BY_ID.has(k) ? str(v, '').replace(/[^A-E]/g, '') || undefined : undefined);
+  n.fc = obj(s.fc, (k, v) => BY_ID.has(k) && v && typeof v === 'object' ? { due: +v.due || 0, step: Math.min(6, Math.max(0, +v.step || 0)), n: Math.max(0, +v.n || 0) } : undefined);
   n.srs = obj(s.srs, (k, v) => BY_ID.has(k) && v && typeof v === 'object' ? { due: +v.due || 0, step: Math.min(5, Math.max(0, +v.step || 0)) } : undefined);
   n.cadernos = (Array.isArray(s.cadernos) ? s.cadernos : []).filter(c => c && typeof c === 'object').slice(0, 200).map(c => ({ id: str(c.id, '').slice(0, 20) || Date.now().toString(36), nome: str(c.nome, 'Caderno').slice(0, 80), conc: CONC[c.conc] ? c.conc : n.conc, f: filtroSeguro(c.f), ts: +c.ts || 0 }));
   n.simulados = (Array.isArray(s.simulados) ? s.simulados : []).filter(x => x && typeof x === 'object' && Array.isArray(x.ids)).slice(0, 300).map(x => ({ id: str(x.id, '').slice(0, 20) || Date.now().toString(36), nome: str(x.nome, 'Simulado').slice(0, 120), conc: CONC[x.conc] ? x.conc : n.conc, ids: x.ids.filter(id => BY_ID.has(id)).slice(0, 200), resp: obj(x.resp, (k, v) => BY_ID.has(k) && typeof v === 'string' ? v.slice(0, 1) : undefined), seg: Math.max(0, +x.seg || 0), ini: +x.ini || 0, ts: +x.ts || +x.ini || 0, gasto: Math.max(0, +x.gasto || 0), fim: x.fim ? +x.fim : null, oficial: !!x.oficial, i: Math.max(0, +x.i || 0), res: x.res && typeof x.res === 'object' ? x.res : undefined })).filter(x => x.ids.length);
@@ -368,7 +418,7 @@ function filtroSeguro(f) {
   n.disc = Number.isInteger(f.disc) && f.disc >= -1 && f.disc < DISC.length ? f.disc : -1; n.assunto = str(f.assunto); n.topico = str(f.topico); n.banca = str(f.banca);
   n.tipo = ['ME', 'CE'].includes(f.tipo) ? f.tipo : ''; n.nivel = ['1', '2', '3'].includes(f.nivel) ? f.nivel : ''; n.origem = ['banca', 'autoral'].includes(f.origem) ? f.origem : '';
   n.prova = typeof f.prova === 'string' && PROVAS.some(p => p.id === f.prova) ? f.prova : '';
-  n.status = ['all', 'new', 'bad', 'ok', 'fav', 'notes', 'srs'].includes(f.status) ? f.status : 'all'; n.busca = str(f.busca); n.ordem = f.ordem === 'rand' ? 'rand' : 'orig'; n.seed = +f.seed || 1;
+  n.status = ['all', 'new', 'done', 'bad', 'ok', 'fav', 'notes', 'srs'].includes(f.status) ? f.status : 'all'; n.busca = str(f.busca); n.ordem = f.ordem === 'rand' ? 'rand' : 'orig'; n.seed = +f.seed || 1;
   return n;
 }
 try { st = carregarEstado(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch (e) {}
@@ -423,6 +473,7 @@ function lista() {
     && (!busca || q.s.includes(busca) || q.id.includes(busca)));
   const now = Date.now();
   if (f.status === 'new') l = l.filter(q => !st.ans[q.id]);
+  else if (f.status === 'done') l = l.filter(q => st.ans[q.id]);
   else if (f.status === 'bad') l = l.filter(q => st.ans[q.id] && !st.ans[q.id].ok);
   else if (f.status === 'ok') l = l.filter(q => st.ans[q.id] && st.ans[q.id].ok);
   else if (f.status === 'fav') l = l.filter(q => st.fav[q.id]);
@@ -446,7 +497,7 @@ function registrar(q, resp, modo) {
 }
 
 // ------------------------------------------------------------------ roteador
-const VIEWS = { inicio: vInicio, resolver: vResolver, simulado: vSimulado, revisao: vRevisao, estatisticas: vEstat, cadernos: vCadernos, config: vConfig };
+const VIEWS = { inicio: vInicio, resolver: vResolver, simulado: vSimulado, flashcards: vFlash, revisao: vRevisao, estatisticas: vEstat, cadernos: vCadernos, config: vConfig };
 let view = 'inicio', param = '';
 function route() {
   const h = location.hash.replace(/^#\/?/, '') || 'inicio'; const [v, ...rest] = h.split('.'); param = rest.join('.');
@@ -490,6 +541,18 @@ function ligarInstalar() {
   const b = $('instalarBtn'); if (b) b.onclick = async () => { const p = promptInstalar; if (!p) return; promptInstalar = null; p.prompt(); try { await p.userChoice; } catch (e) {} render(); };
   const x = $('instalarFechar'); if (x) x.onclick = () => { try { localStorage.setItem(IKEY, '1'); } catch (e) {} const box = $('instalarBox'); if (box) box.remove(); };
 }
+const ICO = {
+  questoes: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17"/>',
+  simulados: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/>',
+  flash: '<rect x="3" y="7" width="14" height="13" rx="2"/><path d="M7 7V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-2"/>',
+  provas: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
+  desemp: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+};
+const ico = k => `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg>`;
+const MKEY = 'rn-menu-aberto';
+// filtros combináveis da seção "Opções" do Início (não alteram st.f até o aluno clicar em Resolver)
+let opcInicio = { status: 'all', nivel: '', tipo: '' };
+function irResolver(f) { st.f = Object.assign({}, DEF.f, f); st.cur = null; st.pag = 0; save(); location.hash = '#resolver'; }
 function vInicio(main) {
   const c = CONC[st.conc], pool = poolConc(), discs = discsDoConc();
   const resp = pool.filter(q => st.ans[q.id]), oks = resp.filter(q => st.ans[q.id].ok).length;
@@ -497,74 +560,92 @@ function vInicio(main) {
   const dias = diasEstudo(); const hoje = st.hist.filter(h => h[0] > Date.now() - DAY);
   const ultimo = st.cur && BY_ID.get(st.cur);
   const prazo = c.prova ? Math.ceil((new Date(c.prova + 'T12:00:00') - Date.now()) / DAY) : null;
-  main.innerHTML = `
-  <div class="stack">
-    <div class="row between">
-      <div><div class="eyebrow">${esc(c.edital)}</div><h1>${esc(c.nome)}</h1>
-        <p class="muted small" style="margin:6px 0 0">${esc(c.formato)} · prova: ${esc(c.provaTexto)}${prazo !== null ? ` · <b>${prazo > 0 ? `faltam ${prazo} dias` : prazo === 0 ? 'é hoje' : 'já realizada'}</b>` : ''}</p></div>
-      <div class="row">
-        ${ultimo ? `<a class="btn" href="#resolver">Continuar de onde parei</a>` : ''}
-        <a class="btn primary" href="#resolver" id="iniciar">Resolver questões</a>
-      </div>
-    </div>
-    ${avisoInstalar(true)}
+  const provas = PROVAS.filter(p => p.conc.includes(st.conc));
+  const cartas = poolCartas(pool), fcHoje = cartas.filter(q => st.fc[q.id] && st.fc[q.id].due <= Date.now()).length;
+  const sims = st.simulados.filter(s => s.conc === st.conc && s.fim).slice(-3).reverse();
+  const cnt = (k, v) => pool.filter(q => String(q[k] || '') === v).length;
+  let aberto = ''; try { aberto = sessionStorage.getItem(MKEY) || ''; } catch (e) {}
+  const item = (id, ic, titulo, sub, corpo) => `<details class="mi" name="menu" data-mi="${id}" ${aberto === id ? 'open' : ''}><summary><span class="mi-ic">${ico(ic)}</span><span class="mi-tx"><b>${titulo}</b><span>${sub}</span></span><span class="mi-ch" aria-hidden="true">›</span></summary><div class="mi-body">${corpo}</div></details>`;
+  const linha = (attrs, nome, dir) => `<button class="lnk" ${attrs}><span>${nome}</span><span class="lnk-n">${dir}</span></button>`;
+  const chips = (grupo, opcoes) => `<div class="seg" data-grupo="${grupo}">${opcoes.map(([v, n]) => `<button class="chip" data-v="${v}" aria-pressed="${opcInicio[grupo] === v}">${n}</button>`).join('')}</div>`;
+
+  const questoes = `
+    <button class="btn primary blk" id="iniciar">Resolver todas as questões (${pool.length})</button>
+    ${ultimo ? `<button class="btn blk" id="continuar">Continuar de onde parei</button>` : ''}
+    <h3 class="mi-h">Disciplinas</h3>
+    <div class="lst">${discs.map(d => { const qs = pool.filter(q => q.disc === d), ass = {}; qs.forEach(q => { ass[q.assunto] = (ass[q.assunto] || 0) + 1; });
+      return `<details class="sub"><summary><span>${esc(DISC[d])}</span><span class="lnk-n">${qs.length} <span class="mi-ch" aria-hidden="true">›</span></span></summary><div class="lst sub-l">
+        ${linha(`data-ir="${esc(JSON.stringify({ disc: d }))}"`, `<b>Todo o conteúdo de ${esc(DISC[d])}</b>`, qs.length)}
+        ${Object.entries(ass).map(([a, n]) => linha(`data-ir="${esc(JSON.stringify({ disc: d, assunto: a }))}"`, esc(a), n)).join('')}</div></details>`; }).join('')}</div>
+    <h3 class="mi-h">Bancas</h3>
+    <div class="lst">${porBanca(pool).map(b => linha(`data-ir="${esc(JSON.stringify({ banca: b.banca }))}"`, esc(b.banca), `${b.n}`)).join('')}</div>
+    <h3 class="mi-h">Opções</h3>
+    <div class="opc">
+      <span class="opc-l">Situação</span>${chips('status', [['all', 'Todas'], ['new', 'Não resolvidas'], ['done', 'Resolvidas'], ['ok', 'Acertei'], ['bad', 'Errei']])}
+      <span class="opc-l">Dificuldade</span>${chips('nivel', [['', 'Todas'], ['1', `Fácil (${cnt('nivel', '1')})`], ['2', `Médio (${cnt('nivel', '2')})`], ['3', `Difícil (${cnt('nivel', '3')})`]])}
+      <span class="opc-l">Tipo</span>${chips('tipo', [['', 'Todos'], ['CE', `Certo/errado (${cnt('tipo', 'CE')})`], ['ME', `Múltipla escolha (${cnt('tipo', 'ME')})`]])}
+      <button class="btn primary blk" id="opcIr"></button>
+      <p class="hint">A dificuldade só existe nas questões já calibradas; as demais aparecem em "Todas".</p>
+    </div>`;
+
+  const simulados = `
+    <button class="btn primary blk" id="simIr">Simulado no formato da prova (${c.simulado.questoes} questões · ${c.simulado.minutos / 60}h)</button>
+    <a class="btn blk" href="#simulado">Simulado personalizado (disciplinas, quantidade e tempo)</a>
+    <h3 class="mi-h">Últimos resultados</h3>
+    ${sims.length ? `<div class="lst">${sims.map(s => `<a class="lnk" href="#simulado.${s.id}"><span>${esc(s.nome)}<span class="hint" style="display:block">${fmtDate(s.ts)}</span></span><span class="lnk-n"><span class="tag ${s.res.aprovado ? 'ok' : 'red'}">${s.res.acertos}/${s.ids.length}</span></span></a>`).join('')}</div><a class="btn sm" href="#simulado" style="margin-top:8px">Ver histórico completo</a>` : '<p class="hint">Nenhum simulado concluído ainda.</p>'}`;
+
+  const flash = `
+    <p class="small muted" style="margin:0 0 10px">Cartões de memorização feitos das questões: na frente o enunciado, no verso a resposta e o comentário. Você diz se lembrou, e o cartão volta no momento certo.</p>
+    <a class="btn primary blk" href="#flashcards.hoje">${fcHoje ? `Revisar os ${fcHoje} cartões de hoje` : 'Estudar cartões novos'}</a>
+    <a class="btn blk" href="#flashcards.erros">Cartões das questões que errei</a>
+    <h3 class="mi-h">Por disciplina</h3>
+    <div class="lst">${discs.map(d => { const n = cartas.filter(q => q.disc === d).length; return n ? `<a class="lnk" href="#flashcards.d${d}"><span>${esc(DISC[d])}</span><span class="lnk-n">${n}</span></a>` : ''; }).join('')}</div>`;
+
+  const provasH = provas.length ? `<div class="lst">${provas.map(p => { const qs = Q.filter(q => q.prova === p.id), r = qs.filter(q => st.ans[q.id]), o = r.filter(q => st.ans[q.id].ok).length;
+      return `<div class="prova"><b>${esc(p.banca)} ${p.ano} · ${esc(p.cargo)}</b><span class="hint">${esc(p.orgao)} · ${p.n} questões${p.minutos ? ` · ${p.minutos / 60}h` : ''}${r.length ? ` · feitas ${r.length}, acerto ${pct(o, r.length)}%` : ''}${p.gabStatus === 'preliminar' ? ' · gabarito preliminar' : ''}</span>
+        <div class="row"><button class="btn sm" data-ir="${esc(JSON.stringify({ origem: 'banca', prova: p.id }))}">Resolver</button>${p.minutos ? `<button class="btn sm primary" data-provasim="${esc(p.id)}">Fazer a prova cronometrada</button>` : ''}</div></div>`; }).join('')}</div>` : '<p class="hint">Nenhuma prova anterior cadastrada para este concurso.</p>';
+
+  const desemp = `
     <div class="tiles">
-      <div class="tile"><b>${pool.length}</b><span>questões do concurso</span></div>
       <div class="tile"><b>${resp.length}</b><span>respondidas</span></div>
       <div class="tile ok"><b>${resp.length ? pct(oks, resp.length) + '%' : '–'}</b><span>aproveitamento</span></div>
       <div class="tile acc"><b>${hoje.length}</b><span>respondidas hoje</span></div>
       <div class="tile"><b>${dias.streak}</b><span>dias seguidos</span></div>
       <div class="tile ${due ? 'bad' : ''}"><b>${due}</b><span>para revisar hoje</span></div>
+      <div class="tile"><b>${pool.length}</b><span>questões do concurso</span></div>
     </div>
-    <div class="cols2">
-      <section class="card">
-        <h2>Por disciplina</h2>
-        <p class="hint" style="margin:4px 0 12px">Clique numa disciplina para resolver só as questões dela.</p>
-        <table class="tbl"><thead><tr><th>Disciplina</th><th class="r">Feitas</th><th class="r">Acerto</th><th style="width:30%">Progresso</th></tr></thead><tbody>
-        ${discs.map(d => { const qs = pool.filter(q => q.disc === d), r = qs.filter(q => st.ans[q.id]), o = r.filter(q => st.ans[q.id].ok).length; return `<tr><td><a href="#resolver" data-disc="${d}" class="discLink">${esc(DISC[d])}</a></td><td class="r">${r.length}/${qs.length}</td><td class="r">${r.length ? pct(o, r.length) + '%' : '–'}</td><td><div class="bar"><i class="g" style="width:${pct(o, qs.length)}%"></i><i class="r" style="width:${pct(r.length - o, qs.length)}%"></i></div></td></tr>`; }).join('')}
-        </tbody></table>
-      </section>
-      <div class="stack">
-        <section class="card">
-          <h2>Por banca</h2>
-          <p class="hint" style="margin:4px 0 12px">Questões de provas reais contam pela banca que as aplicou; as autorais, pelo estilo em que foram escritas.</p>
-          <table class="tbl"><thead><tr><th>Banca</th><th class="r">Questões</th><th class="r">Feitas</th><th class="r">Acerto</th></tr></thead><tbody>
-          ${porBanca(pool).map(b => `<tr><td><a href="#resolver" class="bancaLink" data-banca="${esc(b.banca)}">${esc(b.banca)}</a></td><td class="r">${b.n}</td><td class="r">${b.feitas}</td><td class="r">${b.feitas ? pct(b.ok, b.feitas) + '%' : '–'}</td></tr>`).join('')}
-          </tbody></table>
-        </section>
-        <section class="card">
-          <h2>Provas anteriores</h2>
-          <p class="hint" style="margin:4px 0 12px">Provas reais já aplicadas, transcritas na íntegra. Resolva questão a questão ou faça a prova inteira com cronômetro, na ordem original.</p>
-          ${PROVAS.filter(p => p.conc.includes(st.conc)).map(p => { const qs = Q.filter(q => q.prova === p.id), r = qs.filter(q => st.ans[q.id]), o = r.filter(q => st.ans[q.id].ok).length; return `<div class="sim-item"><div style="flex:1;min-width:200px"><b>${esc(p.banca)} ${p.ano} · ${esc(p.cargo)}</b><div class="hint">${esc(p.orgao)} · ${qs.length} questões${p.minutos ? ` · ${p.minutos / 60} h` : ''}${p.inferido ? ' · gabarito não oficial' : p.preliminar ? ' · gabarito preliminar' : ''} · ${r.length ? `${o}/${r.length} acertos` : 'não iniciada'}</div></div><a class="btn sm" href="#resolver" data-prova="${esc(p.id)}">Resolver</a><button class="btn sm primary" data-provasim="${esc(p.id)}">Fazer a prova</button></div>`; }).join('') || '<p class="muted small" style="margin:10px 0 0">Nenhuma prova real deste concurso no banco ainda. As fontes a transcrever estão listadas em docs/PESQUISA.md.</p>'}
-        </section>
-        <section class="card">
-          <h2>Atalhos de estudo</h2>
-          <div class="row" style="margin-top:12px">
-            <a class="btn" href="#resolver" data-status="new">Só as não respondidas</a>
-            <a class="btn" href="#resolver" data-status="bad">Refazer as que errei</a>
-            <a class="btn ${due ? 'accent' : ''}" href="#revisao">Revisão do dia${due ? ` (${due})` : ''}</a>
-            <a class="btn" href="#simulado">Fazer um simulado</a>
-            <a class="btn" href="#resolver" data-status="fav">Favoritas</a>
-          </div>
-        </section>
-        <section class="card">
-          <h2>Pontos fracos</h2>
-          ${fracos(pool).length ? `<table class="tbl" style="margin-top:10px"><tbody>${fracos(pool).map(f => `<tr><td><a href="#resolver" class="assLink" data-disc="${f.disc}" data-assunto="${esc(f.assunto)}">${esc(f.assunto)}</a><div class="hint">${esc(DISC[f.disc])}</div></td><td class="r">${f.ok}/${f.n}</td><td class="r"><b style="color:var(--bad)">${pct(f.ok, f.n)}%</b></td></tr>`).join('')}</tbody></table>` : `<p class="muted small" style="margin:10px 0 0">Responda pelo menos 5 questões de um assunto para ele aparecer aqui.</p>`}
-        </section>
-        <section class="card">
-          <h2>Simulados recentes</h2>
-          ${st.simulados.filter(s => s.conc === st.conc && s.fim).slice(-3).reverse().map(s => `<div class="sim-item"><b>${esc(s.nome)}</b><span class="muted small">${fmtDate(s.ts)}</span><span class="tag ${s.res.aprovado ? 'ok' : 'red'}">${s.res.acertos}/${s.ids.length} · ${s.res.pontos} pts</span><a class="btn sm" href="#simulado.${s.id}">ver</a></div>`).join('') || '<p class="muted small" style="margin:10px 0 0">Nenhum simulado concluído ainda.</p>'}
-        </section>
-      </div>
-    </div>
-    <p class="hint">Banco atualizado em ${esc(BANK.versao)} · ${Q.length} questões no total (${Q.filter(q => q.origem === 'banca').length} de provas reais, ${Q.filter(q => q.origem === 'autoral').length} autorais inéditas no estilo das bancas). O progresso fica salvo neste navegador; faça backup em Configurações.</p>
+    ${due ? `<a class="btn accent blk" href="#revisao">Revisão do dia (${due} questões)</a>` : ''}
+    <h3 class="mi-h">Pontos fracos</h3>
+    ${fracos(pool).length ? `<div class="lst">${fracos(pool).map(f => linha(`data-ir="${esc(JSON.stringify({ disc: f.disc, assunto: f.assunto }))}"`, `${esc(f.assunto)}<span class="hint" style="display:block">${esc(DISC[f.disc])}</span>`, `${pct(f.ok, f.n)}%`)).join('')}</div>` : '<p class="hint">Aparecem depois de 5 respostas num mesmo assunto.</p>'}
+    <a class="btn blk" href="#estatisticas">Ver desempenho completo (por dia, disciplina, banca e assunto)</a>`;
+
+  main.innerHTML = `
+  <div class="stack">
+    <div><div class="eyebrow">${esc(c.edital)}</div><h1>${esc(c.nome)}</h1>
+      <p class="muted small" style="margin:6px 0 0">${esc(c.formato)} · prova: ${esc(c.provaTexto)}${prazo !== null ? ` · <b>${prazo > 0 ? `faltam ${prazo} dias` : prazo === 0 ? 'é hoje' : 'já realizada'}</b>` : ''}</p></div>
+    ${avisoInstalar(true)}
+    <nav class="menu" aria-label="Menu principal">
+      ${item('questoes', 'questoes', 'Questões', `${pool.length} questões · disciplinas, assuntos e bancas`, questoes)}
+      ${item('simulados', 'simulados', 'Simulados', 'No formato da prova ou personalizado, com cronômetro', simulados)}
+      ${item('flash', 'flash', 'FlashCards', fcHoje ? `${fcHoje} cartões para revisar hoje` : `${cartas.length} cartões para memorizar`, flash)}
+      ${item('provas', 'provas', 'Provas Anteriores', `${provas.length} provas reais na íntegra`, provasH)}
+      ${item('desemp', 'desemp', 'Desempenho', resp.length ? `${resp.length} respondidas · ${pct(oks, resp.length)}% de acerto` : 'Seu progresso, pontos fracos e revisão', desemp)}
+    </nav>
+    <p class="hint">Banco atualizado em ${esc(BANK.versao)} · ${Q.length} questões no total (${Q.filter(q => q.origem === 'banca').length} de provas reais, ${Q.filter(q => q.origem === 'autoral').length} autorais inéditas no estilo das bancas).</p>
   </div>`;
   ligarInstalar();
-  main.querySelectorAll('.discLink').forEach(a => a.onclick = () => { st.f = Object.assign({}, DEF.f, { disc: +a.dataset.disc }); st.cur = null; st.pag = 0; save(); });
-  main.querySelectorAll('.assLink').forEach(a => a.onclick = () => { st.f = Object.assign({}, DEF.f, { disc: +a.dataset.disc, assunto: a.dataset.assunto }); st.cur = null; st.pag = 0; save(); });
-  main.querySelectorAll('[data-status]').forEach(a => a.onclick = () => { st.f = Object.assign({}, DEF.f, { status: a.dataset.status }); st.cur = null; st.pag = 0; save(); });
-  main.querySelectorAll('.bancaLink').forEach(a => a.onclick = () => { st.f = Object.assign({}, DEF.f, { banca: a.dataset.banca }); st.cur = null; st.pag = 0; save(); });
-  main.querySelectorAll('[data-prova]').forEach(a => a.onclick = () => { st.f = Object.assign({}, DEF.f, { origem: 'banca', prova: a.dataset.prova }); st.cur = null; st.pag = 0; save(); });
+  // sanfona: uma entrada aberta por vez (o atributo name já faz isso nos navegadores novos) e lembrada na sessão
+  main.querySelectorAll('details.mi').forEach(d => d.addEventListener('toggle', () => {
+    if (d.open) { main.querySelectorAll('details.mi').forEach(o => { if (o !== d) o.open = false; }); try { sessionStorage.setItem(MKEY, d.dataset.mi); } catch (e) {} }
+    else { try { if (sessionStorage.getItem(MKEY) === d.dataset.mi) sessionStorage.removeItem(MKEY); } catch (e) {} }
+  }));
+  main.querySelectorAll('[data-ir]').forEach(b => b.onclick = () => irResolver(JSON.parse(b.dataset.ir)));
+  $('iniciar').onclick = () => irResolver({});
+  const cont = $('continuar'); if (cont) cont.onclick = () => { location.hash = '#resolver'; };
+  const contaOpc = () => { const f = st.f; st.f = Object.assign({}, DEF.f, opcInicio); const n = lista().length; st.f = f; $('opcIr').textContent = n ? `Resolver ${n} questões` : 'Nenhuma questão com essas opções'; $('opcIr').disabled = !n; };
+  main.querySelectorAll('.opc .seg').forEach(g => g.querySelectorAll('.chip').forEach(ch => ch.onclick = () => { opcInicio[g.dataset.grupo] = ch.dataset.v; g.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', x === ch)); contaOpc(); }));
+  contaOpc(); $('opcIr').onclick = () => irResolver(opcInicio);
+  $('simIr').onclick = () => { const ids = gerarOficial(true); if (!ids) return toast('Banco insuficiente para esse formato.'); iniciarSim(`Simulado ${c.curto} · ${fmtDate(Date.now())}`, ids, c.simulado.minutos * 60, true); };
   main.querySelectorAll('[data-provasim]').forEach(b => b.onclick = () => { const p = PROVAS.find(x => x.id === b.dataset.provasim); const ids = Q.filter(q => q.prova === p.id).sort((x, y) => (x.numero || 0) - (y.numero || 0)).map(q => q.id); iniciarSim(`${p.banca} ${p.ano} · ${p.cargo} (${p.orgao})`, ids, (p.minutos || 0) * 60, false); });
 }
 function porBanca(pool) {
@@ -609,7 +690,7 @@ function vResolver(main) {
       <section class="panel">
         <h2 class="panel-title">Mostrar</h2>
         <div class="seg" id="showSeg">
-          ${[['all', 'Todas'], ['new', 'Não respondidas'], ['bad', 'Erradas'], ['ok', 'Acertadas'], ['fav', 'Favoritas'], ['notes', 'Anotadas'], ['srs', 'Para revisar']].map(([v, n]) => `<button class="chip" data-v="${v}" aria-pressed="${f.status === v}">${n}</button>`).join('')}
+          ${[['all', 'Todas'], ['new', 'Não respondidas'], ['done', 'Resolvidas'], ['bad', 'Erradas'], ['ok', 'Acertadas'], ['fav', 'Favoritas'], ['notes', 'Anotadas'], ['srs', 'Para revisar']].map(([v, n]) => `<button class="chip" data-v="${v}" aria-pressed="${f.status === v}">${n}</button>`).join('')}
         </div>
       </section>
       <section class="panel">
@@ -787,6 +868,84 @@ function vRevisao(main) {
   show();
 }
 
+// =================================================================== FLASHCARDS
+// Cartões feitos das próprias questões: frente = enunciado; verso = resposta + comentário. Entram só as que
+// funcionam como cartão (sem texto-base ou imagem no enunciado; ME sem "incorreta/exceto" e sem gabarito "I e III").
+const FC_DIAS = [1, 3, 7, 14, 30, 60, 120], FC_LOTE = 20;
+const RX_NEG = /incorret|exceto|errad|falsa|não\s+(é|está|constitui|corresponde|configura|se aplica)/i;
+const RX_ROMANO = /^\s*(apenas|somente|todas|nenhuma)?\s*(as|os)?\s*(afirmativas|assertivas|itens|alternativas|proposições)?\s*[IVX]+\b/i;
+const txt = h => String(h || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+const CARTA_OK = new Map();
+function ehCarta(q) {
+  if (CARTA_OK.has(q.id)) return CARTA_OK.get(q.id);
+  let ok = !q.texto && !/<img/i.test(q.e) && txt(q.e).length <= 900;
+  if (ok && q.tipo === 'ME') { const alt = q.a[q.g.charCodeAt(0) - 65] || ''; ok = !RX_NEG.test(txt(q.e)) && !RX_ROMANO.test(txt(alt)) && txt(alt).length >= 2 && !/<img/i.test(alt); }
+  CARTA_OK.set(q.id, ok); return ok;
+}
+function poolCartas(pool) { return pool.filter(ehCarta); }
+let fcSess = null;
+function fcMontar(deck) {
+  const now = Date.now(), base = poolCartas(poolConc());
+  let alvo = base;
+  if (deck === 'erros') alvo = base.filter(q => st.ans[q.id] && !st.ans[q.id].ok);
+  else if (/^d\d+$/.test(deck)) alvo = base.filter(q => q.disc === +deck.slice(1));
+  const vencidos = alvo.filter(q => st.fc[q.id] && st.fc[q.id].due <= now).sort((a, b) => st.fc[a.id].due - st.fc[b.id].due);
+  const novos = seeded(alvo.filter(q => !st.fc[q.id]), now % 1e9);
+  const ids = vencidos.concat(novos).slice(0, FC_LOTE).map(q => q.id);
+  const nome = deck === 'hoje' ? 'Cartões de hoje' : deck === 'erros' ? 'Questões que errei' : /^d\d+$/.test(deck) ? DISC[+deck.slice(1)] : 'Cartões';
+  return { deck, nome, ids, i: 0, virado: false, notas: { 0: 0, 1: 0, 2: 0, 3: 0 }, voltas: {} };
+}
+function fcIntervalo(id, nota) { // nota: 0 errei, 1 difícil, 2 lembrei, 3 fácil → [passo, ms]
+  const c = st.fc[id], passo = c ? c.step : -1;
+  if (nota === 0) return [0, 10 * 60000];
+  if (nota === 1) { const p = Math.max(0, passo); return [p, Math.max(1, Math.round(FC_DIAS[p] / 2)) * DAY]; }
+  const p = Math.min(FC_DIAS.length - 1, passo + (nota === 3 ? 2 : 1)); return [p, FC_DIAS[p] * DAY];
+}
+const fcRotulo = ms => ms < DAY ? '10 min' : ms / DAY === 1 ? '1 dia' : `${Math.round(ms / DAY)} dias`;
+function vFlash(main) {
+  if (!param) { location.hash = '#flashcards.hoje'; return; }
+  if (!fcSess || fcSess.deck !== param || fcSess.fim) fcSess = fcMontar(param);
+  const S = fcSess;
+  main.innerHTML = `<div class="stack fc-wrap">
+    <div class="row between"><div><div class="eyebrow">FlashCards · ${esc(CONC[st.conc].curto)}</div><h1>${esc(S.nome)}</h1></div><a class="btn sm" href="#inicio">Sair</a></div>
+    <article class="card fc" id="fcCard"></article></div>`;
+  const card = $('fcCard');
+  function fim() {
+    S.fim = true;
+    card.innerHTML = `<div class="empty"><p><b>${S.ids.length ? 'Sessão concluída.' : 'Nenhum cartão disponível agora.'}</b></p>
+      ${S.ids.length ? `<p>Errei ${S.notas[0]} · Difícil ${S.notas[1]} · Lembrei ${S.notas[2]} · Fácil ${S.notas[3]}</p>` : `<p class="hint">${S.deck === 'erros' ? 'Os cartões daqui vêm das questões que você errou.' : 'Todos os cartões deste grupo estão agendados para depois.'}</p>`}
+      <div class="row" style="justify-content:center"><a class="btn primary" href="#flashcards.${esc(S.deck)}" id="fcMais">Mais cartões</a><a class="btn" href="#inicio">Voltar ao início</a></div></div>`;
+    $('fcMais').onclick = e => { e.preventDefault(); fcSess = null; render(); };
+  }
+  function show() {
+    if (S.i >= S.ids.length) return fim();
+    const q = BY_ID.get(S.ids[S.i]); const alt = q.tipo === 'ME' ? q.a[q.g.charCodeAt(0) - 65] : '';
+    const verso = q.tipo === 'CE' ? `<div class="fc-res ${q.g === 'C' ? 'ok' : 'bad'}">${q.g === 'C' ? 'Certo' : 'Errado'}</div>` : `<div class="fc-res ok"><span class="fc-l">${q.g}</span><span>${alt}</span></div>`;
+    card.innerHTML = `<div class="fc-top"><span class="tag">${esc(DISC[q.disc])}</span><span class="hint">${esc(q.assunto)}</span><span class="fc-pos">${S.i + 1} de ${S.ids.length}</span></div>
+      <div class="stem">${q.tipo === 'CE' ? '<span class="fc-q">Certo ou errado?</span>' : ''}${q.e}</div>
+      ${S.virado ? `<div class="fc-verso">${verso}<div class="just">${q.c}</div><p class="hint">${esc(q.estilo || q.banca)}${q.fonte ? ' · ' + esc(q.fonte) : ''}</p></div>
+        <div class="fc-notas">${['Errei', 'Difícil', 'Lembrei', 'Fácil'].map((n, k) => `<button class="btn fc-n${k}" data-nota="${k}"><b>${n}</b><span>${fcRotulo(fcIntervalo(q.id, k)[1])}</span></button>`).join('')}</div>`
+      : `<button class="btn primary blk" id="fcVirar">Mostrar resposta</button><p class="hint" style="text-align:center">Tente lembrar antes de virar. Atalho: espaço.</p>`}`;
+    const v = $('fcVirar'); if (v) v.onclick = () => { S.virado = true; show(); };
+    card.querySelectorAll('[data-nota]').forEach(b => b.onclick = () => notar(q, +b.dataset.nota));
+  }
+  function notar(q, nota) {
+    const [passo, ms] = fcIntervalo(q.id, nota), c = st.fc[q.id];
+    st.fc[q.id] = { due: Date.now() + ms, step: passo, n: (c ? c.n : 0) + 1 }; save();
+    S.notas[nota]++;
+    if (nota === 0 && (S.voltas[q.id] || 0) < 2) { S.voltas[q.id] = (S.voltas[q.id] || 0) + 1; S.ids.push(q.id); } // errou: volta no fim da sessão
+    S.i++; S.virado = false; show(); card.scrollIntoView({ block: 'start' });
+  }
+  card._fc = { virar: () => { if (!S.virado && S.i < S.ids.length) { S.virado = true; show(); } }, notar: k => { if (S.virado && S.i < S.ids.length) notar(BY_ID.get(S.ids[S.i]), k); } };
+  show();
+}
+document.addEventListener('keydown', e => {
+  if (view !== 'flashcards' || e.target.closest('input,textarea,select,button,a') || e.metaKey || e.ctrlKey || e.altKey) return;
+  const c = $('fcCard'); if (!c || !c._fc || !$('modal').hidden) return;
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); c._fc.virar(); }
+  else if ('1234'.includes(e.key) && e.key) c._fc.notar(+e.key - 1);
+});
+
 // =================================================================== SIMULADOS
 let timerI = null;
 function vSimulado(main) {
@@ -826,12 +985,8 @@ function vSimulado(main) {
   main.querySelectorAll('#simDiscs .chip').forEach(ch => ch.onclick = () => ch.setAttribute('aria-pressed', ch.getAttribute('aria-pressed') !== 'true'));
   main.querySelectorAll('[data-del]').forEach(b => b.onclick = () => confirmar('Excluir este simulado do histórico?', () => { st.simulados = st.simulados.filter(s => s.id !== b.dataset.del); save(); render(); }, 'Excluir'));
   $('simOficial').onclick = () => {
-    const novas = $('simNovas').checked, ids = [];
-    for (const b of sc.blocos) for (const [d, n] of b.itens) {
-      const di = DISC.indexOf(d), exato = sortear(pool.filter(q => q.disc === di && q.tipo === 'ME' && q.a.length === sc.alternativas), n, novas);
-      ids.push(...exato); if (exato.length < n) ids.push(...sortear(pool.filter(q => q.disc === di && q.tipo === 'ME' && q.a.length !== sc.alternativas && !exato.includes(q.id)), n - exato.length, novas));
-    }
-    if (ids.length < sc.questoes * 0.8) return toast('Banco insuficiente para esse formato.');
+    const ids = gerarOficial($('simNovas').checked);
+    if (!ids) return toast('Banco insuficiente para esse formato.');
     iniciarSim(`Simulado ${c.curto} · ${fmtDate(Date.now())}`, ids, $('simTempo').checked ? sc.minutos * 60 : 0, true);
   };
   $('simCustom').onclick = () => {
@@ -842,7 +997,16 @@ function vSimulado(main) {
     const fin = seeded(ids, Date.now() % 1e9).slice(0, n); if (fin.length < 5) return toast('Poucas questões para esse filtro.');
     iniciarSim(`Personalizado · ${ds.length} disciplina${ds.length > 1 ? 's' : ''} · ${fmtDate(Date.now())}`, fin, min * 60, false);
   };
-  function sortear(qs, n, novas) { const seed = Date.now() % 1e9 + 7; const a = seeded(qs.filter(q => !st.ans[q.id]), seed), b = seeded(qs.filter(q => st.ans[q.id]), seed + 1); return (novas ? a.concat(b) : seeded(qs, seed)).slice(0, n).map(q => q.id); }
+}
+function sortear(qs, n, novas) { const seed = Date.now() % 1e9 + 7; const a = seeded(qs.filter(q => !st.ans[q.id]), seed), b = seeded(qs.filter(q => st.ans[q.id]), seed + 1); return (novas ? a.concat(b) : seeded(qs, seed)).slice(0, n).map(q => q.id); }
+// sorteia o simulado no formato do edital (composição por disciplina); null se o banco não basta
+function gerarOficial(novas) {
+  const sc = CONC[st.conc].simulado, pool = poolConc(), ids = [];
+  for (const b of sc.blocos) for (const [d, n] of b.itens) {
+    const di = DISC.indexOf(d), exato = sortear(pool.filter(q => q.disc === di && q.tipo === 'ME' && q.a.length === sc.alternativas), n, novas);
+    ids.push(...exato); if (exato.length < n) ids.push(...sortear(pool.filter(q => q.disc === di && q.tipo === 'ME' && q.a.length !== sc.alternativas && !exato.includes(q.id)), n - exato.length, novas));
+  }
+  return ids.length < sc.questoes * 0.8 ? null : ids;
 }
 function iniciarSim(nome, ids, segundos, oficial) {
   const s = { id: Date.now().toString(36), nome, conc: st.conc, ids, resp: {}, seg: segundos, ini: Date.now(), ts: Date.now(), gasto: 0, fim: null, oficial, i: 0 };
