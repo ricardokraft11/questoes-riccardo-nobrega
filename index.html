@@ -1345,7 +1345,7 @@ function telaLogin() {
 // =================================================================== versão nova
 // Uma aba aberta (ou o app instalado) continua com o código que carregou. Ao abrir, a cada 15 min e ao voltar
 // para a aba, compara o BUILD embutido com dist/versao.json e oferece atualizar.
-const BUILD = 'da84fa007be4';
+const BUILD = '170fd6bc85d4';
 let avisouVersao = false;
 function checarVersao() {
   if (avisouVersao || NATIVO || !/^https?:$/.test(location.protocol) || /claude\.(ai|site)/.test(location.host)) return;
@@ -1357,27 +1357,43 @@ function checarVersao() {
 }
 
 // =================================================================== diagnóstico (?diag no endereço)
-// Mostra como o navegador está tratando a barra superior/navegação, para investigar aparelhos que não
-// reproduzem os testes. Os elementos de teste distinguem esconder por tag, por classe ou pelo modo de login.
+// Investiga aparelhos que não reproduzem os testes: registra quem remove elementos ou muda estilo/classe da barra,
+// insere elementos de teste (fixos, grudados, com e sem as classes da barra) e mede tudo 2,5 s depois, quando
+// filtros assíncronos já teriam agido. O relatório vai para dentro do conteúdo principal.
+const DIAG = /[?&]diag\b/.test(location.search);
+const diagLog = [], diagT0 = performance.now();
+if (DIAG) new MutationObserver(ms => ms.forEach(m => {
+  const alvo = n => n.nodeType === 1 ? (n.tagName.toLowerCase() + (n.id ? '#' + n.id : '') + (n.className && typeof n.className === 'string' ? '.' + n.className.trim().split(/\s+/).join('.') : '')) : '';
+  const t = Math.round(performance.now() - diagT0);
+  if (m.type === 'childList') m.removedNodes.forEach(n => { if (n.nodeType === 1 && (m.target === document.body || m.target === document.documentElement || m.target === document.head || (m.target.closest && m.target.closest('header')))) diagLog.push(`${t}ms removido ${alvo(n)} de ${alvo(m.target)}`); });
+  else if (m.type === 'attributes' && (m.target.matches('header, header *, body, html, [id^="dg"]'))) diagLog.push(`${t}ms ${alvo(m.target)} mudou ${m.attributeName}: "${String(m.oldValue || '').slice(0, 60)}" → "${String(m.target.getAttribute(m.attributeName) || '').slice(0, 60)}"`);
+})).observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeOldValue: true, attributeFilter: ['style', 'class', 'hidden'] });
 function mostrarDiag() {
-  const vis = e => { if (!e) return 'ausente'; const c = getComputedStyle(e); return `${c.display}/${c.visibility}/op${c.opacity}/h${Math.round(e.getBoundingClientRect().height)}`; };
-  const teste = document.createElement('div'); teste.style.cssText = 'position:absolute;left:-9999px;top:0';
-  teste.innerHTML = '<header class="rn-cabecalho" id="dg1">a</header><header class="dg-neutro" id="dg2">b</header><div class="rn-cabecalho" id="dg3">c</div><nav class="rn-abas" id="dg4">d</nav><div class="topbar" id="dg5">e</div>';
+  const vis = e => { if (!e || !e.isConnected) return 'REMOVIDO'; const c = getComputedStyle(e), r = e.getBoundingClientRect(); return `${c.display}/${c.visibility}/op${c.opacity}/h${Math.round(r.height)}${c.clipPath && c.clipPath !== 'none' ? '/clip' : ''}`; };
+  const teste = document.createElement('div'); teste.id = 'dgCaixa';
+  teste.innerHTML = `<header class="rn-cabecalho" id="dg1" style="position:static">header.rn-cabecalho</header>
+    <header class="dg-neutro" id="dg2">header neutro</header><div class="rn-cabecalho" id="dg3" style="position:static">div.rn-cabecalho</div>
+    <nav class="rn-abas" id="dg4" style="position:static">nav.rn-abas</nav><div id="dg5" style="position:fixed;top:0;left:0;right:0;height:20px;background:#E2A64A;color:#000;z-index:50;font-size:11px">teste fixo no topo</div>
+    <div id="dg6" style="position:fixed;bottom:0;left:0;right:0;height:20px;background:#E2A64A;color:#000;z-index:50;font-size:11px">teste fixo no rodapé</div>
+    <div id="dg7" style="position:sticky;top:0;height:20px;background:#9ab;color:#000;font-size:11px">teste grudado (sticky)</div><div id="dg8">div simples</div>`;
   document.body.appendChild(teste);
-  const h = document.querySelector('header'), n = document.querySelector('header nav');
-  const linhas = [
-    ['versão', BUILD], ['endereço', location.href], ['navegador', navigator.userAgent], ['tela', `${innerWidth}×${innerHeight} · dpr ${devicePixelRatio}`],
-    ['body', `"${document.body.className}" · login aberto: ${loginAberto} · sessão: ${sessao() ? 'sim' : 'não'}`],
-    ['barra', `${h ? h.className : 'sem header'} → ${vis(h)}`], ['navegação', vis(n)],
-    ['teste header.rn-cabecalho', vis($('dg1'))], ['teste header neutro', vis($('dg2'))], ['teste div.rn-cabecalho', vis($('dg3'))], ['teste nav.rn-abas', vis($('dg4'))], ['teste div.topbar', vis($('dg5'))],
-    ['service worker', navigator.serviceWorker && navigator.serviceWorker.controller ? 'controlando' : 'não'], ['folhas de estilo', [...document.styleSheets].length + ' · adotadas ' + (document.adoptedStyleSheets || []).length],
-  ];
-  teste.remove();
-  const txtD = linhas.map(([k, v]) => `${k}: ${v}`).join('\n');
-  const box = el(`<div class="diag"><b>Diagnóstico</b><pre>${esc(txtD)}</pre><div class="row"><button class="btn sm" id="diagCopiar">Copiar</button><button class="btn sm" id="diagFechar">Fechar</button></div></div>`);
-  document.body.appendChild(box);
-  $('diagFechar').onclick = () => box.remove();
-  $('diagCopiar').onclick = () => { try { navigator.clipboard.writeText(txtD).then(() => toast('Diagnóstico copiado.')); } catch (e) { mostrarTexto('Diagnóstico', txtD); } };
+  const medir = () => {
+    const h = document.querySelector('header.rn-cabecalho:not(#dg1)') || document.querySelector('header'), n = h && h.querySelector('nav');
+    const linhas = [['versão', BUILD], ['endereço', location.href], ['navegador', navigator.userAgent], ['tela', `${innerWidth}×${innerHeight} · dpr ${devicePixelRatio} · instalado: ${instalado()}`],
+      ['body', `"${document.body.className}" · login aberto: ${loginAberto} · sessão: ${sessao() ? 'sim' : 'não'} · filhos do body: ${[...document.body.children].map(c => c.tagName.toLowerCase() + (c.id ? '#' + c.id : '')).join(',')}`],
+      ['barra real', `${h ? h.tagName.toLowerCase() + '.' + h.className : 'NÃO EXISTE NO DOM'} → ${vis(h)}`], ['navegação real', vis(n)],
+      ...[['dg1', 'header.rn-cabecalho'], ['dg2', 'header neutro'], ['dg3', 'div.rn-cabecalho'], ['dg4', 'nav.rn-abas'], ['dg5', 'div fixa no topo'], ['dg6', 'div fixa no rodapé'], ['dg7', 'div sticky'], ['dg8', 'div simples']].map(([id, nome]) => ['teste ' + nome, vis(document.getElementById(id))]),
+      ['service worker', navigator.serviceWorker && navigator.serviceWorker.controller ? 'controlando' : 'não'], ['folhas de estilo', [...document.styleSheets].map(x => x.href ? x.href.split('/').pop().slice(0, 30) : 'inline').join(', ') + ' · adotadas ' + (document.adoptedStyleSheets || []).length],
+      ['alterações registradas', diagLog.length ? '\n  ' + diagLog.slice(0, 40).join('\n  ') : 'nenhuma']];
+    return linhas.map(([k, v]) => `${k}: ${v}`).join('\n');
+  };
+  setTimeout(() => {
+    const txtD = medir(); teste.remove();
+    const main = $('main'); const box = document.createElement('section'); box.className = 'card'; box.id = 'diagRel';
+    box.innerHTML = `<h2>Diagnóstico</h2><p class="hint">Toque em Copiar e cole na conversa.</p><pre style="white-space:pre-wrap;word-break:break-all;font-family:var(--mono);font-size:12px">${esc(txtD)}</pre><button class="btn primary" id="diagCopiar">Copiar</button>`;
+    main.prepend(box); window.scrollTo({ top: 0 });
+    $('diagCopiar').onclick = () => { const ok = () => toast('Diagnóstico copiado.'); try { navigator.clipboard.writeText(txtD).then(ok, () => mostrarTexto('Diagnóstico', txtD)); } catch (e) { mostrarTexto('Diagnóstico', txtD); } };
+  }, 2500);
 }
 
 // =================================================================== início
@@ -1395,7 +1411,7 @@ function mostrarDiag() {
   if (exigeLogin() && !sessao()) await telaLogin();
   initConc(); route();
   if (!NATIVO && 'serviceWorker' in navigator && location.protocol.startsWith('http') && !/claude\.(ai|site)/.test(location.host)) navigator.serviceWorker.register('sw.js').catch(() => {});
-  if (/[?&]diag\b/.test(location.search)) setTimeout(mostrarDiag, 800);
+  if (DIAG) mostrarDiag();
   checarVersao(); setInterval(checarVersao, 15 * 60000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checarVersao(); });
 })();
