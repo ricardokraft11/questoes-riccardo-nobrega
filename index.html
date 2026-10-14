@@ -542,7 +542,8 @@ function route() {
   window.scrollTo({ top: 0 });
   render();
 }
-function render() { const main = $('main'); main.innerHTML = ''; mostrarQ = null; VIEWS[view](main); }
+let diagHTML = '';
+function render() { const main = $('main'); main.innerHTML = ''; mostrarQ = null; VIEWS[view](main); if (diagHTML) main.insertAdjacentHTML('afterbegin', diagHTML); }
 // ------------------------------------------------- voltar entre questões (gesto/botão "voltar" do celular)
 // Cada questão visitada vira uma entrada do histórico do navegador (mesmo hash, estado {v, nq, k, ant}).
 // O "voltar" do aparelho reabre a questão anterior em vez de sair da tela; da primeira questão, sai.
@@ -1345,7 +1346,7 @@ function telaLogin() {
 // =================================================================== versão nova
 // Uma aba aberta (ou o app instalado) continua com o código que carregou. Ao abrir, a cada 15 min e ao voltar
 // para a aba, compara o BUILD embutido com dist/versao.json e oferece atualizar.
-const BUILD = '170fd6bc85d4';
+const BUILD = '7bc0de8e2eab';
 let avisouVersao = false;
 function checarVersao() {
   if (avisouVersao || NATIVO || !/^https?:$/.test(location.protocol) || /claude\.(ai|site)/.test(location.host)) return;
@@ -1389,10 +1390,9 @@ function mostrarDiag() {
   };
   setTimeout(() => {
     const txtD = medir(); teste.remove();
-    const main = $('main'); const box = document.createElement('section'); box.className = 'card'; box.id = 'diagRel';
-    box.innerHTML = `<h2>Diagnóstico</h2><p class="hint">Toque em Copiar e cole na conversa.</p><pre style="white-space:pre-wrap;word-break:break-all;font-family:var(--mono);font-size:12px">${esc(txtD)}</pre><button class="btn primary" id="diagCopiar">Copiar</button>`;
-    main.prepend(box); window.scrollTo({ top: 0 });
-    $('diagCopiar').onclick = () => { const ok = () => toast('Diagnóstico copiado.'); try { navigator.clipboard.writeText(txtD).then(ok, () => mostrarTexto('Diagnóstico', txtD)); } catch (e) { mostrarTexto('Diagnóstico', txtD); } };
+    diagHTML = `<section class="card" id="diagRel"><h2>Diagnóstico</h2><pre style="white-space:pre-wrap;word-break:break-all;font-family:var(--mono);font-size:12px">${esc(txtD)}</pre></section>`;
+    render(); window.scrollTo({ top: 0 });
+    window.alert('Diagnóstico da plataforma (tire um print ou copie):\n\n' + txtD);
   }, 2500);
 }
 
