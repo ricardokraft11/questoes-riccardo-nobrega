@@ -76,18 +76,18 @@ h3{font-size:18px;font-weight:600}
 kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;background:var(--surface)}
 
 /* ===== Topbar ===== */
-.topbar{display:flex;align-items:center;gap:16px;padding:calc(10px + var(--sa-top)) calc(16px + var(--sa-right)) 10px calc(16px + var(--sa-left));background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
-.brand-mark{font-family:var(--display);font-weight:700;background:var(--ink);color:var(--accent);border-radius:8px;width:36px;height:36px;display:grid;place-items:center;font-size:16px;letter-spacing:.02em}
-.brand-text{display:flex;flex-direction:column;line-height:1.05}
-.brand-text b{font-family:var(--display);font-size:16px;font-weight:700;white-space:nowrap}
-.brand-text small{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.mainnav{display:flex;gap:2px;margin-left:8px;flex:1}
-.mainnav a{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:6px;text-decoration:none;color:var(--muted);font-weight:500;font-size:14px}
-.mainnav a:hover{background:var(--surface2);color:var(--ink)}
-.mainnav a.on{background:var(--ink);color:var(--bg)}
-.mainnav .ic{font-size:15px}
-.topright{display:flex;align-items:center;gap:8px}
+.rn-cabecalho{display:flex;align-items:center;gap:16px;padding:calc(10px + var(--sa-top)) calc(16px + var(--sa-right)) 10px calc(16px + var(--sa-left));background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.rn-marca{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.rn-marca-ic{font-family:var(--display);font-weight:700;background:var(--ink);color:var(--accent);border-radius:8px;width:36px;height:36px;display:grid;place-items:center;font-size:16px;letter-spacing:.02em}
+.rn-marca-tx{display:flex;flex-direction:column;line-height:1.05}
+.rn-marca-tx b{font-family:var(--display);font-size:16px;font-weight:700;white-space:nowrap}
+.rn-marca-tx small{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.rn-abas{display:flex;gap:2px;margin-left:8px;flex:1}
+.rn-abas a{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:6px;text-decoration:none;color:var(--muted);font-weight:500;font-size:14px}
+.rn-abas a:hover{background:var(--surface2);color:var(--ink)}
+.rn-abas a.on{background:var(--ink);color:var(--bg)}
+.rn-abas .ic{font-size:15px}
+.rn-cab-dir{display:flex;align-items:center;gap:8px}
 .concSel,select.sel,input.inp,textarea.inp{font:inherit;font-size:14px;color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px}
 .iconbtn{display:grid;place-items:center;width:40px;height:40px;border-radius:8px;border:1px solid var(--line);background:var(--surface);text-decoration:none;color:var(--ink);font-size:18px;cursor:pointer}
 .iconbtn:hover{border-color:var(--muted)}
@@ -249,17 +249,17 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
 /* ===== Mobile ===== */
 @media (max-width:900px){
   .grid{grid-template-columns:minmax(0,1fr);gap:12px}
-  .topbar{gap:8px;padding:calc(8px + var(--sa-top)) calc(12px + var(--sa-right)) 8px calc(12px + var(--sa-left))}
+  .rn-cabecalho{gap:8px;padding:calc(8px + var(--sa-top)) calc(12px + var(--sa-right)) 8px calc(12px + var(--sa-left))}
   .toast{bottom:calc(84px + var(--sa-bottom))}
-  .brand-text small{display:none}
-  .brand{min-width:0;flex:1 1 auto}
-  .brand-mark{flex:none}
-  .brand-text{min-width:0}
-  .brand-text b{overflow:hidden;text-overflow:ellipsis}
-  .topright{flex:none}
-  .mainnav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);margin:0;padding:4px 4px calc(4px + var(--sa-bottom));justify-content:space-around}
-  .mainnav a{flex-direction:column;gap:1px;padding:6px 4px;font-size:10.5px;min-width:52px}
-  .mainnav .ic{font-size:18px}
+  .rn-marca-tx small{display:none}
+  .rn-marca{min-width:0;flex:1 1 auto}
+  .rn-marca-ic{flex:none}
+  .rn-marca-tx{min-width:0}
+  .rn-marca-tx b{overflow:hidden;text-overflow:ellipsis}
+  .rn-cab-dir{flex:none}
+  .rn-abas{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);margin:0;padding:4px 4px calc(4px + var(--sa-bottom));justify-content:space-around}
+  .rn-abas a{flex-direction:column;gap:1px;padding:6px 4px;font-size:10.5px;min-width:52px}
+  .rn-abas .ic{font-size:18px}
   .wrap{padding:12px 12px 90px}
   .filtBtn{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;cursor:pointer;min-height:48px}
   .filtBtn .fl{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block}
@@ -278,10 +278,10 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
   .score-big{font-size:36px}
   .qtools{margin-left:0;width:100%}
 }
-@media print{.topbar,.mainnav,.side,.palette,.nav,.qtools,.toast{display:none!important}.card{border:0;box-shadow:none}}
+@media print{.rn-cabecalho,.rn-abas,.side,.palette,.nav,.qtools,.toast{display:none!important}.card{border:0;box-shadow:none}}
 
 /* ===== Acesso ===== */
-body.auth .topbar,body.auth .mainnav{display:none}
+body.auth .rn-cabecalho,body.auth .rn-abas{display:none}
 .login{min-height:70vh;display:grid;place-items:center;padding:24px 0}
 .login-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:28px 26px;width:100%;max-width:420px}
 /* ===== Instalação como app (PWA) ===== */
@@ -363,12 +363,12 @@ details[open]>summary .mi-ch{transform:rotate(90deg)}
 </head>
 <body>
 <a class="skip" href="#main">Ir para o conteúdo</a>
-<header class="topbar">
-  <a class="brand" href="#inicio" aria-label="Início">
-    <span class="brand-mark">RN</span>
-    <span class="brand-text"><b>Professor Riccardo Nóbrega</b><small>Plataforma de questões</small></span>
+<header class="rn-cabecalho">
+  <a class="rn-marca" href="#inicio" aria-label="Início">
+    <span class="rn-marca-ic">RN</span>
+    <span class="rn-marca-tx"><b>Professor Riccardo Nóbrega</b><small>Plataforma de questões</small></span>
   </a>
-  <nav class="mainnav" aria-label="Seções">
+  <nav class="rn-abas" aria-label="Seções">
     <a href="#inicio" data-view="inicio"><span class="ic">⌂</span><span>Início</span></a>
     <a href="#resolver" data-view="resolver"><span class="ic">✎</span><span>Resolver</span></a>
     <a href="#simulado" data-view="simulado"><span class="ic">⏱</span><span>Simulados</span></a>
@@ -376,7 +376,7 @@ details[open]>summary .mi-ch{transform:rotate(90deg)}
     <a href="#estatisticas" data-view="estatisticas"><span class="ic">▤</span><span>Desempenho</span></a>
     <a href="#cadernos" data-view="cadernos"><span class="ic">▣</span><span>Cadernos</span></a>
   </nav>
-  <div class="topright">
+  <div class="rn-cab-dir">
     <select id="concSel" class="concSel" aria-label="Concurso"></select>
     <a href="#config" class="iconbtn" data-view="config" aria-label="Configurações" title="Configurações">⚙</a>
   </div>
@@ -526,10 +526,14 @@ function registrar(q, resp, modo) {
 const VIEWS = { inicio: vInicio, resolver: vResolver, simulado: vSimulado, flashcards: vFlash, revisao: vRevisao, estatisticas: vEstat, cadernos: vCadernos, config: vConfig };
 let view = 'inicio', param = '';
 function route() {
+  // Com a tela de login aberta, nenhuma navegação (voltar/avançar do aparelho, link) pode desenhar outra tela:
+  // antes, voltar a partir do login abria a plataforma sem as barras e sem passar pelo login.
+  if (document.body.classList.contains('auth')) return;
+  if (exigeLogin() && !sessao()) { location.reload(); return; } // sessão expirou durante o uso
   const h = location.hash.replace(/^#\/?/, '') || 'inicio'; const [v, ...rest] = h.split('.'); param = rest.join('.');
   if (v === 'q' && param) { const q = BY_ID.get(param); if (q) { st.cur = q.id; st.f = Object.assign({}, DEF.f, { busca: q.id }); if (!concDe(q)) st.conc = q.conc[0]; save(); history.replaceState(null, '', '#resolver'); route(); return; } }
   view = VIEWS[v] ? v : 'inicio';
-  document.querySelectorAll('.mainnav a, .topright a').forEach(a => a.classList.toggle('on', a.dataset.view === view));
+  document.querySelectorAll('.rn-abas a, .rn-cab-dir a').forEach(a => a.classList.toggle('on', a.dataset.view === view));
   window.scrollTo({ top: 0 });
   render();
 }
@@ -1291,6 +1295,7 @@ document.addEventListener('keydown', e => {
 // embutidos na página. Serve para controlar quem abre a demonstração, não para proteger o banco:
 // quem tiver o arquivo lê o conteúdo. A versão de produção precisa de autenticação no servidor.
 const SKEY = 'rn-sessao';
+function exigeLogin() { return !!(BANK.auth && Array.isArray(BANK.auth.usuarios) && BANK.auth.usuarios.length); }
 function sessao() { try { for (const store of [sessionStorage, localStorage]) { const s = JSON.parse(store.getItem(SKEY) || 'null'); if (s && typeof s.u === 'string' && s.exp > Date.now() && (BANK.auth.usuarios || []).some(x => x.u === s.u)) return s; } } catch (e) {} return null; }
 function encerrarSessao() { try { sessionStorage.removeItem(SKEY); localStorage.removeItem(SKEY); } catch (e) {} location.hash = ''; location.reload(); }
 const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
@@ -1304,7 +1309,7 @@ function telaLogin() {
     document.body.classList.add('auth');
     const main = $('main'); let falhas = 0, bloqueadoAte = 0;
     main.innerHTML = `<div class="login"><form class="login-box" id="loginForm" autocomplete="on">
-      <div class="brand" style="margin-bottom:18px"><span class="brand-mark">RN</span><span class="brand-text"><b>Professor Riccardo Nóbrega</b><small>Plataforma de questões</small></span></div>
+      <div class="rn-marca" style="margin-bottom:18px"><span class="rn-marca-ic">RN</span><span class="rn-marca-tx"><b>Professor Riccardo Nóbrega</b><small>Plataforma de questões</small></span></div>
       <h1 style="font-size:24px">Plataforma de Questões</h1>
       <p class="small muted" style="margin:6px 0 16px">Plataforma de questões do professor Riccardo Nóbrega. Acesso restrito a convidados.</p>
       <div class="fgroup"><label for="loginU">Usuário</label><input class="inp" id="loginU" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required></div>
@@ -1334,7 +1339,7 @@ function telaLogin() {
 // =================================================================== versão nova
 // Uma aba aberta (ou o app instalado) continua com o código que carregou. Ao abrir, a cada 15 min e ao voltar
 // para a aba, compara o BUILD embutido com dist/versao.json e oferece atualizar.
-const BUILD = 'aaf73984fc97';
+const BUILD = '135ea0e3f018';
 let avisouVersao = false;
 function checarVersao() {
   if (avisouVersao || NATIVO || !/^https?:$/.test(location.protocol) || /claude\.(ai|site)/.test(location.host)) return;
@@ -1357,7 +1362,7 @@ function checarVersao() {
     const h = history.state, raiz = /^#?(inicio)?$/.test(location.hash) && !(h && h.k > 0);
     if (raiz || document.body.classList.contains('auth')) APP.exitApp(); else history.back();
   });
-  if (BANK.auth && Array.isArray(BANK.auth.usuarios) && BANK.auth.usuarios.length && !sessao()) await telaLogin();
+  if (exigeLogin() && !sessao()) await telaLogin();
   initConc(); route();
   if (!NATIVO && 'serviceWorker' in navigator && location.protocol.startsWith('http') && !/claude\.(ai|site)/.test(location.host)) navigator.serviceWorker.register('sw.js').catch(() => {});
   checarVersao(); setInterval(checarVersao, 15 * 60000);
