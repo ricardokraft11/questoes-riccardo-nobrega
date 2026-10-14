@@ -345,6 +345,20 @@ details[open]>summary .mi-ch{transform:rotate(90deg)}
 /* ===== aviso de versão nova ===== */
 .atualizar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + var(--sa-bottom));z-index:60;display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--bg);padding:10px 12px 10px 16px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:14px;width:max-content;max-width:calc(100vw - 24px)}
 @media (max-width:900px){.atualizar{bottom:calc(84px + var(--sa-bottom))}}
+/* ===== Desempenho por período ===== */
+.seg.per{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.seg.per::-webkit-scrollbar{display:none}
+.seg.per .chip{flex:none;text-decoration:none}
+.delta{font-family:var(--mono);font-size:12px;font-weight:500;white-space:nowrap;color:var(--muted)}
+.delta.up{color:var(--ok)} .delta.down{color:var(--bad)}
+.tile .delta{display:block;margin-top:2px}
+.curva{width:100%;height:120px;display:block;border-bottom:1px solid var(--line)}
+.curva line{stroke:var(--line);stroke-width:1;stroke-dasharray:3 3;vector-effect:non-scaling-stroke}
+.curva polyline{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.curva circle{fill:var(--accent)}
+.lnk.tend{cursor:default}
+.lnk.tend:hover{background:none}
+@media (max-width:600px){.hide-sm{display:none}}
 </style>
 </head>
 <body>
@@ -436,7 +450,10 @@ const strip = h => String(h || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
 const pct = (a, b) => b ? Math.round(100 * a / b) : 0;
 const fmtDate = t => new Date(t).toLocaleDateString('pt-BR');
 const fmtTime = s => { s = Math.max(0, Math.round(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return (h ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(x).padStart(2, '0'); };
-const today = () => Math.floor(Date.now() / DAY);
+// dias contados no horário local do aparelho (número do dia desde 1970 no fuso local)
+const diaN = t => Math.floor((t - new Date(t).getTimezoneOffset() * 60000) / DAY);
+const today = () => diaN(Date.now());
+const diaMs = d => { const t = d * DAY; return t + new Date(t).getTimezoneOffset() * 60000; }; // meia-noite local do dia d
 function el(html) { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; }
 function seeded(arr, seed) { let s = seed || 1; const r = () => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648; }; const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 let toastT; function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2600); }
@@ -583,7 +600,7 @@ function vInicio(main) {
   const c = CONC[st.conc], pool = poolConc(), discs = discsDoConc();
   const resp = pool.filter(q => st.ans[q.id]), oks = resp.filter(q => st.ans[q.id].ok).length;
   const due = pool.filter(q => st.srs[q.id] && st.srs[q.id].due <= Date.now()).length;
-  const dias = diasEstudo(); const hoje = st.hist.filter(h => h[0] > Date.now() - DAY);
+  const dias = diasEstudo(); const hoje = st.hist.filter(h => diaN(h[0]) === today());
   const ultimo = st.cur && BY_ID.get(st.cur);
   const prazo = c.prova ? Math.ceil((new Date(c.prova + 'T12:00:00') - Date.now()) / DAY) : null;
   const provas = PROVAS.filter(p => p.conc.includes(st.conc));
@@ -631,19 +648,15 @@ function vInicio(main) {
       return `<div class="prova"><b>${esc(p.banca)} ${p.ano} · ${esc(p.cargo)}</b><span class="hint">${esc(p.orgao)} · ${p.n} questões${p.minutos ? ` · ${p.minutos / 60}h` : ''}${r.length ? ` · feitas ${r.length}, acerto ${pct(o, r.length)}%` : ''}${p.gabStatus === 'preliminar' ? ' · gabarito preliminar' : ''}</span>
         <div class="row"><button class="btn sm" data-ir="${esc(JSON.stringify({ origem: 'banca', prova: p.id }))}">Resolver</button>${p.minutos ? `<button class="btn sm primary" data-provasim="${esc(p.id)}">Fazer a prova cronometrada</button>` : ''}</div></div>`; }).join('')}</div>` : '<p class="hint">Nenhuma prova anterior cadastrada para este concurso.</p>';
 
+  const histC = st.hist.filter(h => BY_ID.has(h[1]) && concDe(BY_ID.get(h[1])));
   const desemp = `
-    <div class="tiles">
-      <div class="tile"><b>${resp.length}</b><span>respondidas</span></div>
-      <div class="tile ok"><b>${resp.length ? pct(oks, resp.length) + '%' : '–'}</b><span>aproveitamento</span></div>
-      <div class="tile acc"><b>${hoje.length}</b><span>respondidas hoje</span></div>
-      <div class="tile"><b>${dias.streak}</b><span>dias seguidos</span></div>
-      <div class="tile ${due ? 'bad' : ''}"><b>${due}</b><span>para revisar hoje</span></div>
-      <div class="tile"><b>${pool.length}</b><span>questões do concurso</span></div>
-    </div>
+    <div class="lst">${PERIODOS.filter(([v]) => v !== 'tudo').map(([v, n]) => { const I = intervaloDias(v), r = resumoH(histC.filter(h => { const d = diaN(h[0]); return d >= I.a && d <= I.b; }));
+      return `<a class="lnk" href="#estatisticas.${v}"><span>${n}</span><span class="lnk-n">${r.n ? `${r.n} resp. · <b>${pct(r.ok, r.n)}%</b>` : 'sem respostas'} <span class="mi-ch" aria-hidden="true">›</span></span></a>`; }).join('')}</div>
+    <a class="btn blk" href="#estatisticas.30.disc">Desempenho por disciplina</a>
+    <a class="btn blk" href="#estatisticas.30.tend">Desempenho crescente e decrescente (último mês)</a>
     ${due ? `<a class="btn accent blk" href="#revisao">Revisão do dia (${due} questões)</a>` : ''}
     <h3 class="mi-h">Pontos fracos</h3>
-    ${fracos(pool).length ? `<div class="lst">${fracos(pool).map(f => linha(`data-ir="${esc(JSON.stringify({ disc: f.disc, assunto: f.assunto }))}"`, `${esc(f.assunto)}<span class="hint" style="display:block">${esc(DISC[f.disc])}</span>`, `${pct(f.ok, f.n)}%`)).join('')}</div>` : '<p class="hint">Aparecem depois de 5 respostas num mesmo assunto.</p>'}
-    <a class="btn blk" href="#estatisticas">Ver desempenho completo (por dia, disciplina, banca e assunto)</a>`;
+    ${fracos(pool).length ? `<div class="lst">${fracos(pool).map(f => linha(`data-ir="${esc(JSON.stringify({ disc: f.disc, assunto: f.assunto }))}"`, `${esc(f.assunto)}<span class="hint" style="display:block">${esc(DISC[f.disc])}</span>`, `${pct(f.ok, f.n)}%`)).join('')}</div>` : '<p class="hint">Aparecem depois de 5 respostas num mesmo assunto.</p>'}`;
 
   main.innerHTML = `
   <div class="stack">
@@ -679,7 +692,7 @@ function porBanca(pool) {
   return Object.values(m).sort((a, b) => b.n - a.n);
 }
 function diasEstudo() {
-  const dias = new Set(st.hist.map(h => Math.floor(h[0] / DAY))); let streak = 0, d = today();
+  const dias = new Set(st.hist.map(h => diaN(h[0]))); let streak = 0, d = today();
   if (!dias.has(d)) d--; while (dias.has(d)) { streak++; d--; }
   return { total: dias.size, streak };
 }
@@ -1095,28 +1108,100 @@ function simResultado(main, s) {
 }
 
 // =================================================================== DESEMPENHO
+// ---------------------------------------------------------------- períodos do Desempenho
+const PERIODOS = [['hoje', 'Hoje'], ['ontem', 'Ontem'], ['7', 'Últimos 7 dias'], ['15', 'Últimos 15 dias'], ['30', 'Último mês'], ['180', 'Último semestre'], ['tudo', 'Todo o período']];
+function intervaloDias(p) { // [primeiro dia, último dia] (números de dia locais) e o período anterior equivalente
+  const t = today();
+  if (p === 'hoje') return { a: t, b: t, ant: [t - 1, t - 1], nomeAnt: 'ontem' };
+  if (p === 'ontem') return { a: t - 1, b: t - 1, ant: [t - 2, t - 2], nomeAnt: 'anteontem' };
+  if (p === 'tudo') { const d0 = st.hist.length ? diaN(st.hist[0][0]) : t; return { a: d0, b: t, ant: null }; }
+  const n = +p; return { a: t - n + 1, b: t, ant: [t - 2 * n + 1, t - n], nomeAnt: `${n} dias anteriores` };
+}
+function resumoH(h) { const n = h.length, ok = h.filter(x => x[2]).length; return { n, ok, err: n - ok, p: n ? ok / n : null, distintas: new Set(h.map(x => x[1])).size, dias: new Set(h.map(x => diaN(x[0]))).size }; }
+function porChave(h, chave) { const m = new Map(); h.forEach(x => { const q = BY_ID.get(x[1]); if (!q) return; const k = chave(q); const v = m.get(k) || { n: 0, ok: 0 }; v.n++; if (x[2]) v.ok++; m.set(k, v); }); return m; }
+const ppDelta = (p1, p0) => { const d = Math.round((p1 - p0) * 100); return `<span class="delta ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d > 0 ? '▲ +' : d < 0 ? '▼ ' : '= '}${d} p.p.</span>`; };
+let ordemDisc = 'pior';
 function vEstat(main) {
-  const pool = poolConc(), ids = new Set(pool.map(q => q.id)), hist = st.hist.filter(h => ids.has(h[1]));
-  const dias = diasEstudo(); const resp = pool.filter(q => st.ans[q.id]), oks = resp.filter(q => st.ans[q.id].ok).length;
-  const porDia = {}; for (let d = today() - 29; d <= today(); d++) porDia[d] = { n: 0, ok: 0 }; hist.forEach(h => { const d = Math.floor(h[0] / DAY); if (porDia[d]) { porDia[d].n++; if (h[2]) porDia[d].ok++; } });
-  const max = Math.max(1, ...Object.values(porDia).map(x => x.n));
-  const bancas = {}; pool.forEach(q => { const a = st.ans[q.id]; if (!a) return; bancas[q.banca] = bancas[q.banca] || { n: 0, ok: 0 }; bancas[q.banca].n++; if (a.ok) bancas[q.banca].ok++; });
-  const porAss = {}; pool.forEach(q => { const a = st.ans[q.id]; if (!a) return; const k = q.disc + '|' + q.assunto; porAss[k] = porAss[k] || { disc: q.disc, assunto: q.assunto, n: 0, ok: 0 }; porAss[k].n++; if (a.ok) porAss[k].ok++; });
-  const assL = Object.values(porAss).sort((a, b) => (a.ok / a.n) - (b.ok / b.n));
-  const sem = hist.filter(h => h[0] > Date.now() - 7 * DAY), semOk = sem.filter(h => h[2]).length;
+  const [pPer, secao] = (param || '').split('.');
+  const per = PERIODOS.some(x => x[0] === pPer) ? pPer : '7', nomePer = PERIODOS.find(x => x[0] === per)[1];
+  const pool = poolConc(), ids = new Set(pool.map(q => q.id)), histC = st.hist.filter(h => ids.has(h[1]));
+  const I = intervaloDias(per), noIntervalo = (a, b) => histC.filter(h => { const d = diaN(h[0]); return d >= a && d <= b; });
+  const H = noIntervalo(I.a, I.b), R = resumoH(H), Hant = I.ant ? noIntervalo(I.ant[0], I.ant[1]) : [], Rant = resumoH(Hant);
+  const dias = diasEstudo(), nDias = I.b - I.a + 1;
+
+  // gráfico do período: por hora (1 dia), por dia (até 31) ou por semana/mês
+  let barras = [];
+  if (nDias === 1) { for (let hr = 0; hr < 24; hr++) barras.push({ r: `${hr}h`, n: 0, ok: 0 }); H.forEach(h => { const b = barras[new Date(h[0]).getHours()]; b.n++; if (h[2]) b.ok++; }); }
+  else { const passo = nDias <= 31 ? 1 : nDias <= 200 ? 7 : 30; for (let d = I.a; d <= I.b; d += passo) barras.push({ d, r: passo === 1 ? fmtDate(diaMs(d)) : `${fmtDate(diaMs(d))} a ${fmtDate(diaMs(Math.min(I.b, d + passo - 1)))}`, n: 0, ok: 0 }); H.forEach(h => { const b = barras[Math.floor((diaN(h[0]) - I.a) / passo)]; if (b) { b.n++; if (h[2]) b.ok++; } }); }
+  const max = Math.max(1, ...barras.map(b => b.n));
+  const grafico = `<div class="chart">${barras.map(b => `<div class="c" title="${esc(b.r)}: ${b.ok} acertos, ${b.n - b.ok} erros"><i class="r" style="height:${(b.n - b.ok) / max * 110}px"></i><i style="height:${b.ok / max * 110}px"></i></div>`).join('')}</div><div class="chart-x"><span>${esc(barras[0].r.split(' a ')[0])}</span><span>${nDias === 1 ? '23h' : esc(barras[barras.length - 1].r.split(' a ').pop())}</span></div>`;
+
+  // por disciplina no período, com comparação ao período anterior
+  const dP = porChave(H, q => q.disc), dA = porChave(Hant, q => q.disc);
+  let linhasD = discsDoConc().map(d => ({ d, v: dP.get(d) || { n: 0, ok: 0 }, a: dA.get(d) }));
+  const ordens = { pior: (x, y) => (x.v.n ? x.v.ok / x.v.n : 2) - (y.v.n ? y.v.ok / y.v.n : 2), melhor: (x, y) => (y.v.n ? y.v.ok / y.v.n : -1) - (x.v.n ? x.v.ok / x.v.n : -1), mais: (x, y) => y.v.n - x.v.n };
+  linhasD.sort(ordens[ordemDisc]);
+
+  // crescente e decrescente: último mês, 15 dias recentes contra os 15 anteriores
+  const t = today(), M0 = noIntervalo(t - 29, t - 15), M1 = noIntervalo(t - 14, t), m0 = porChave(M0, q => q.disc), m1 = porChave(M1, q => q.disc);
+  const tend = discsDoConc().map(d => { const a = m0.get(d), b = m1.get(d); return a && b && a.n >= 5 && b.n >= 5 ? { d, p0: a.ok / a.n, p1: b.ok / b.n, n0: a.n, n1: b.n } : null; }).filter(Boolean);
+  const alta = tend.filter(x => x.p1 > x.p0).sort((x, y) => (y.p1 - y.p0) - (x.p1 - x.p0)), queda = tend.filter(x => x.p1 < x.p0).sort((x, y) => (x.p1 - x.p0) - (y.p1 - y.p0));
+  const g0 = resumoH(M0), g1 = resumoH(M1);
+  // curva: acerto móvel de 7 dias ao longo dos últimos 30 dias
+  const pontos = []; for (let d = t - 29; d <= t; d++) { const w = histC.filter(h => { const x = diaN(h[0]); return x > d - 7 && x <= d; }); pontos.push(w.length >= 3 ? w.filter(h => h[2]).length / w.length : null); }
+  const pts = pontos.map((p, k) => p === null ? null : `${(k / 29 * 300).toFixed(1)},${(100 - p * 100).toFixed(1)}`);
+  const segs = []; let cur = []; pts.forEach(p => { if (p) cur.push(p); else if (cur.length) { segs.push(cur); cur = []; } }); if (cur.length) segs.push(cur);
+  const curva = segs.length ? `<svg class="curva" viewBox="0 0 300 100" preserveAspectRatio="none" role="img" aria-label="Acerto médio de 7 dias nos últimos 30 dias">${[50, 70].map(y => `<line x1="0" x2="300" y1="${100 - y}" y2="${100 - y}"/>`).join('')}${segs.map(sg => sg.length > 1 ? `<polyline points="${sg.join(' ')}"/>` : `<circle cx="${sg[0].split(',')[0]}" cy="${sg[0].split(',')[1]}" r="2"/>`).join('')}</svg><div class="chart-x"><span>${fmtDate(diaMs(t - 29))}</span><span>linhas: 50% e 70%</span><span>hoje</span></div>` : '<p class="hint">A curva aparece quando houver ao menos 3 respostas numa janela de 7 dias.</p>';
+  const linhaT = x => `<div class="lnk tend"><span>${esc(DISC[x.d])}<span class="hint" style="display:block">${x.n0} → ${x.n1} respostas</span></span><span class="lnk-n">${pct(x.p0 * 100, 100)}% → <b>${pct(x.p1 * 100, 100)}%</b> ${ppDelta(x.p1, x.p0)}</span></div>`;
+
+  // banca e assunto no período
+  const bP = [...porChave(H, q => q.banca)].sort((a, b) => b[1].n - a[1].n);
+  const aP = [...porChave(H, q => q.disc + '|' + q.assunto)].map(([k, v]) => ({ disc: +k.split('|')[0], assunto: k.slice(k.indexOf('|') + 1), ...v })).sort((a, b) => a.ok / a.n - b.ok / b.n);
+  const vazio = `<p class="empty" style="padding:18px 0">Nenhuma resposta ${per === 'hoje' ? 'hoje' : per === 'ontem' ? 'ontem' : 'neste período'}.</p>`;
+
   main.innerHTML = `<div class="stack">
-    <div><div class="eyebrow">${esc(CONC[st.conc].curto)}</div><h1>Desempenho</h1></div>
-    <div class="tiles"><div class="tile"><b>${hist.length}</b><span>respostas (histórico)</span></div><div class="tile"><b>${resp.length}</b><span>questões distintas</span></div><div class="tile ok"><b>${resp.length ? pct(oks, resp.length) + '%' : '–'}</b><span>acerto atual</span></div><div class="tile"><b>${sem.length ? pct(semOk, sem.length) + '%' : '–'}</b><span>acerto nos últimos 7 dias</span></div><div class="tile"><b>${dias.total}</b><span>dias de estudo</span></div><div class="tile acc"><b>${dias.streak}</b><span>dias seguidos</span></div></div>
-    <section class="card"><h2>Últimos 30 dias</h2><p class="hint" style="margin:4px 0 10px">Altura: questões respondidas por dia (verde: acertos; vermelho: erros).</p>
-      <div class="chart">${Object.entries(porDia).map(([d, v]) => `<div class="c" title="${fmtDate(d * DAY)}: ${v.ok} acertos, ${v.n - v.ok} erros"><i class="r" style="height:${(v.n - v.ok) / max * 110}px"></i><i style="height:${v.ok / max * 110}px"></i></div>`).join('')}</div>
-      <div class="chart-x"><span>${fmtDate((today() - 29) * DAY)}</span><span>hoje</span></div></section>
+    <div><div class="eyebrow">${esc(CONC[st.conc].curto)} · desempenho</div><h1>${esc(nomePer)}</h1></div>
+    <div class="seg per" role="tablist">${PERIODOS.map(([v, n]) => `<a class="chip" href="#estatisticas.${v}" role="tab" aria-pressed="${v === per}">${n}</a>`).join('')}</div>
+    <section class="card" id="secGeral"><h2>Desempenho geral</h2>
+      <p class="hint" style="margin:4px 0 12px">${per === 'tudo' ? 'Desde a primeira resposta.' : `${fmtDate(diaMs(I.a))}${nDias > 1 ? ' a ' + fmtDate(diaMs(I.b)) : ''}. Comparação com ${I.nomeAnt}.`}</p>
+      ${R.n ? `<div class="tiles">
+        <div class="tile"><b>${R.n}</b><span>respostas</span></div>
+        <div class="tile ok"><b>${pct(R.ok, R.n)}%</b><span>aproveitamento ${Rant.n ? ppDelta(R.p, Rant.p) : ''}</span></div>
+        <div class="tile"><b>${R.ok}</b><span>acertos</span></div>
+        <div class="tile bad"><b>${R.err}</b><span>erros</span></div>
+        <div class="tile"><b>${R.distintas}</b><span>questões diferentes</span></div>
+        <div class="tile acc"><b>${nDias === 1 ? R.n : Math.round(R.n / nDias * 10) / 10}</b><span>${nDias === 1 ? 'no dia' : `por dia · ${R.dias} de ${nDias} dias estudados`}</span></div>
+      </div>
+      ${Rant.n ? `<p class="hint" style="margin-top:10px">${esc(I.nomeAnt[0].toUpperCase() + I.nomeAnt.slice(1))}: ${Rant.n} respostas, ${pct(Rant.ok, Rant.n)}% de acerto.</p>` : ''}
+      <h3 class="mi-h">${nDias === 1 ? 'Por hora' : nDias <= 31 ? 'Por dia' : nDias <= 200 ? 'Por semana' : 'Por mês'} (verde: acertos; vermelho: erros)</h3>${grafico}` : vazio}
+      <p class="hint" style="margin-top:10px">Sequência atual: ${dias.streak} dia${dias.streak === 1 ? '' : 's'} seguido${dias.streak === 1 ? '' : 's'} · ${dias.total} dias de estudo no total.</p>
+    </section>
+    <section class="card" id="secDisc"><div class="row between"><h2>Desempenho por disciplina</h2>
+      <div class="seg" id="ordDisc">${[['pior', 'Pior → melhor'], ['melhor', 'Melhor → pior'], ['mais', 'Mais respondidas']].map(([v, n]) => `<button class="chip" data-v="${v}" aria-pressed="${v === ordemDisc}">${n}</button>`).join('')}</div></div>
+      <table class="tbl" style="margin-top:10px"><thead><tr><th>Disciplina</th><th class="r">Resp.</th><th class="r">Acerto</th><th class="r hide-sm">vs anterior</th><th style="width:22%" class="hide-sm"></th></tr></thead><tbody>
+      ${linhasD.map(x => `<tr><td><a href="#resolver" class="discL" data-disc="${x.d}">${esc(DISC[x.d])}</a></td><td class="r">${x.v.n || '–'}</td><td class="r"><b>${x.v.n ? pct(x.v.ok, x.v.n) + '%' : '–'}</b></td><td class="r hide-sm">${x.v.n >= 5 && x.a && x.a.n >= 5 ? ppDelta(x.v.ok / x.v.n, x.a.ok / x.a.n) : '<span class="hint">–</span>'}</td><td class="hide-sm">${x.v.n ? `<div class="bar"><i class="g" style="width:${pct(x.v.ok, x.v.n)}%"></i><i class="r" style="width:${pct(x.v.n - x.v.ok, x.v.n)}%"></i></div>` : ''}</td></tr>`).join('')}
+      </tbody></table>
+      <p class="hint" style="margin-top:8px">Comparação com ${I.nomeAnt || 'o período anterior'} só quando há ao menos 5 respostas nos dois períodos. Toque na disciplina para resolver as questões dela.</p>
+    </section>
+    <section class="card" id="secTend"><h2>Desempenho crescente e decrescente · último mês</h2>
+      <p class="hint" style="margin:4px 0 12px">Acerto dos últimos 15 dias comparado com os 15 dias anteriores${g0.n && g1.n ? `: no geral, ${pct(g0.ok, g0.n)}% → <b>${pct(g1.ok, g1.n)}%</b> ${ppDelta(g1.p, g0.p)}` : ''}.</p>
+      <h3 class="mi-h">Acerto médio de 7 dias</h3>${curva}
+      <div class="cols2" style="margin-top:14px">
+        <div><h3 class="mi-h">▲ Crescente (melhorando)</h3>${alta.length ? `<div class="lst">${alta.map(linhaT).join('')}</div>` : '<p class="hint">Nenhuma disciplina em alta ainda.</p>'}</div>
+        <div><h3 class="mi-h">▼ Decrescente (piorando)</h3>${queda.length ? `<div class="lst">${queda.map(linhaT).join('')}</div>` : '<p class="hint">Nenhuma disciplina em queda.</p>'}</div>
+      </div>
+      <p class="hint" style="margin-top:8px">Entram as disciplinas com ao menos 5 respostas em cada quinzena.</p>
+    </section>
     <div class="cols2">
-      <section class="card"><h2>Por disciplina</h2><table class="tbl" style="margin-top:10px"><thead><tr><th>Disciplina</th><th class="r">Feitas</th><th class="r">Acerto</th></tr></thead><tbody>${discsDoConc().map(d => { const qs = pool.filter(q => q.disc === d), r = qs.filter(q => st.ans[q.id]), o = r.filter(q => st.ans[q.id].ok).length; return `<tr><td>${esc(DISC[d])}</td><td class="r">${r.length}/${qs.length}</td><td class="r">${r.length ? pct(o, r.length) + '%' : '–'}</td></tr>`; }).join('')}</tbody></table></section>
-      <section class="card"><h2>Por banca / estilo</h2><table class="tbl" style="margin-top:10px"><thead><tr><th>Banca</th><th class="r">Feitas</th><th class="r">Acerto</th></tr></thead><tbody>${Object.entries(bancas).sort((a, b) => b[1].n - a[1].n).map(([b, v]) => `<tr><td>${esc(b)}</td><td class="r">${v.n}</td><td class="r">${pct(v.ok, v.n)}%</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Sem dados.</td></tr>'}</tbody></table></section>
+      <section class="card"><h2>Por banca / estilo</h2><table class="tbl" style="margin-top:10px"><thead><tr><th>Banca</th><th class="r">Resp.</th><th class="r">Acerto</th></tr></thead><tbody>${bP.map(([b, v]) => `<tr><td>${esc(b)}</td><td class="r">${v.n}</td><td class="r">${pct(v.ok, v.n)}%</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Sem respostas no período.</td></tr>'}</tbody></table></section>
+      <section class="card"><h2>Por assunto</h2><p class="hint" style="margin:4px 0 10px">Do pior para o melhor no período. Toque para resolver.</p><table class="tbl"><thead><tr><th>Assunto</th><th class="r">Resp.</th><th class="r">Acerto</th></tr></thead><tbody>${aP.slice(0, 40).map(a => `<tr><td><a href="#resolver" class="assLink" data-disc="${a.disc}" data-assunto="${esc(a.assunto)}">${esc(a.assunto)}</a><div class="hint">${esc(DISC[a.disc])}</div></td><td class="r">${a.n}</td><td class="r">${pct(a.ok, a.n)}%</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Sem respostas no período.</td></tr>'}</tbody></table></section>
     </div>
-    <section class="card"><h2>Por assunto</h2><p class="hint" style="margin:4px 0 10px">Do pior para o melhor aproveitamento. Clique para resolver o assunto.</p><table class="tbl"><thead><tr><th>Assunto</th><th class="r">Feitas</th><th class="r">Acerto</th><th style="width:25%"></th></tr></thead><tbody>${assL.map(a => `<tr><td><a href="#resolver" class="assLink" data-disc="${a.disc}" data-assunto="${esc(a.assunto)}">${esc(a.assunto)}</a><div class="hint">${esc(DISC[a.disc])}</div></td><td class="r">${a.n}</td><td class="r">${pct(a.ok, a.n)}%</td><td><div class="bar"><i class="g" style="width:${pct(a.ok, a.n)}%"></i><i class="r" style="width:${pct(a.n - a.ok, a.n)}%"></i></div></td></tr>`).join('') || '<tr><td colspan="4" class="muted">Sem dados ainda.</td></tr>'}</tbody></table></section>
   </div>`;
-  main.querySelectorAll('.assLink').forEach(a => a.onclick = () => { st.f = Object.assign({}, DEF.f, { disc: +a.dataset.disc, assunto: a.dataset.assunto }); st.cur = null; st.pag = 0; save(); });
+  main.querySelectorAll('.assLink').forEach(a => a.onclick = e => { e.preventDefault(); irResolver({ disc: +a.dataset.disc, assunto: a.dataset.assunto }); });
+  main.querySelectorAll('.discL').forEach(a => a.onclick = e => { e.preventDefault(); irResolver({ disc: +a.dataset.disc }); });
+  main.querySelectorAll('#ordDisc .chip').forEach(c => c.onclick = () => { ordemDisc = c.dataset.v; render(); const s = $('secDisc'); if (s) s.scrollIntoView({ block: 'start' }); });
+  const ativo = main.querySelector('.seg.per [aria-pressed="true"]'); if (ativo) ativo.parentNode.scrollLeft = ativo.offsetLeft - (ativo.parentNode.clientWidth - ativo.offsetWidth) / 2;
+  const alvo = { disc: 'secDisc', tend: 'secTend', geral: 'secGeral' }[secao]; if (alvo) requestAnimationFrame(() => { const s = $(alvo); if (s) s.scrollIntoView({ block: 'start' }); });
 }
 
 // =================================================================== CADERNOS
@@ -1249,7 +1334,7 @@ function telaLogin() {
 // =================================================================== versão nova
 // Uma aba aberta (ou o app instalado) continua com o código que carregou. Ao abrir, a cada 15 min e ao voltar
 // para a aba, compara o BUILD embutido com dist/versao.json e oferece atualizar.
-const BUILD = '5d5b89284c8f';
+const BUILD = 'aaf73984fc97';
 let avisouVersao = false;
 function checarVersao() {
   if (avisouVersao || NATIVO || !/^https?:$/.test(location.protocol) || /claude\.(ai|site)/.test(location.host)) return;
