@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Plataforma de Questões do Professor Riccardo Nóbrega: Guarda Civil Municipal de Sobral 2026 e Guarda Municipal de Fortaleza. Questões comentadas, simulados cronometrados, revisão espaçada e estatísticas.">
-<meta name="theme-color" content="#16202B">
+<meta name="theme-color" content="#0A1B36">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -41,12 +41,13 @@
   --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
   --serif:"Noto Serif",Georgia,"Times New Roman",serif;
   --fs:16px;
+  --hero:#0A1B36;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme:dark;
-    --bg:#0F151C; --surface:#172029; --surface2:#1C2731; --ink:#E4E9EE; --muted:#95A2B0; --line:#2B3744;
-    --accent:#E2A64A; --accent-soft:#33291A; --focus:#7FB0E0; --focus-soft:#1D2D3D;
+    --bg:#0A1426; --surface:#101C31; --surface2:#15233B; --ink:#E6EBF2; --muted:#93A3B9; --line:#22324D;
+    --accent:#E2A64A; --accent-soft:#2E2A22; --focus:#7FB0E0; --focus-soft:#16263F;
     --ok:#4CC48A; --ok-bg:#12301F; --ok-line:#2F7A55;
     --bad:#F07A68; --bad-bg:#3A1A16; --bad-line:#8A3A30;
     --warn:#F2C56B; --warn-bg:#33291A;
@@ -55,8 +56,8 @@
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --bg:#0F151C; --surface:#172029; --surface2:#1C2731; --ink:#E4E9EE; --muted:#95A2B0; --line:#2B3744;
-  --accent:#E2A64A; --accent-soft:#33291A; --focus:#7FB0E0; --focus-soft:#1D2D3D;
+  --bg:#0A1426; --surface:#101C31; --surface2:#15233B; --ink:#E6EBF2; --muted:#93A3B9; --line:#22324D;
+  --accent:#E2A64A; --accent-soft:#2E2A22; --focus:#7FB0E0; --focus-soft:#16263F;
   --ok:#4CC48A; --ok-bg:#12301F; --ok-line:#2F7A55;
   --bad:#F07A68; --bad-bg:#3A1A16; --bad-line:#8A3A30;
   --warn:#F2C56B; --warn-bg:#33291A;
@@ -385,12 +386,23 @@ details[open]>summary .mi-ch{transform:rotate(90deg)}
 @media (hover:hover){.tema-seg button:not([aria-checked="true"]):hover{color:var(--ink)}}
 @media (max-width:460px){.login-top .rn-marca-tx{display:none}}
 
-/* ===== arte de divulgação ===== */
-.banner{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#0b0d10;box-shadow:var(--shadow)}
-.banner img{display:block;width:100%;height:auto;aspect-ratio:1200/480}
-@media (max-width:700px){.banner img{aspect-ratio:840/450}.banner{border-radius:12px}}
 .login{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
-.banner-login{width:100%;max-width:980px}
+
+/* ===== faixa de destaque com a arte (Início e login) ===== */
+/* A arte não é um cartão: ocupa a largura toda, sobre o azul-marinho dela (#0A1B36, medido nas bordas),
+   com laterais e base dissolvidas na faixa, e a faixa termina num degradê para a cor da página. */
+.hero{position:relative;width:100vw;margin-left:calc(50% - 50vw);margin-top:-20px;padding-bottom:36px;
+  background:radial-gradient(60% 80% at 70% 40%,rgba(226,166,74,.10),transparent 70%),linear-gradient(180deg,var(--hero) 0,var(--hero) calc(100% - 64px),var(--bg) 100%)}
+.hero img{display:block;width:100%;max-width:1024px;height:auto;aspect-ratio:1024/572;margin:0 auto;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%),linear-gradient(180deg,#000 86%,transparent 100%);
+  -webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%),linear-gradient(180deg,#000 86%,transparent 100%);mask-composite:intersect}
+.hero + *{margin-top:-8px;position:relative}
+@media (max-width:900px){.hero{margin-top:-12px;padding-bottom:26px}.hero img{-webkit-mask-image:linear-gradient(180deg,#000 88%,transparent 100%);mask-image:linear-gradient(180deg,#000 88%,transparent 100%)}}
+@media (max-width:1024px){.hero img{-webkit-mask-image:linear-gradient(180deg,#000 88%,transparent 100%);mask-image:linear-gradient(180deg,#000 88%,transparent 100%)}}
+body.auth .hero{margin-top:calc(-20px - 0px)}
+
+/* a faixa de destaque usa 100vw; clip (e não hidden) para não quebrar o cabeçalho sticky */
+body{overflow-x:clip}
 </style>
 </head>
 <body>
@@ -636,9 +648,9 @@ const MKEY = 'rn-menu-aberto';
 // filtros combináveis da seção "Opções" do Início (não alteram st.f até o aluno clicar em Resolver)
 let opcInicio = { status: 'all', nivel: '', tipo: '' };
 function irResolver(f) { st.f = Object.assign({}, DEF.f, f); st.cur = null; st.pag = 0; save(); location.hash = '#resolver'; }
-// arte de divulgação: completa no desktop/tablet; no celular, recorte com título e professor (legível em 390 px)
-const ALT_BANNER = 'Plataforma de Questões para Concursos, carreira policial e jurídica. Estude com Riccardo Nóbrega: questões comentadas, simulados por edital, acompanhamento de desempenho, estude no computador ou no celular.';
-const banner = (cls = '') => `<picture class="banner ${cls}"><source media="(max-width: 700px)" srcset="assets/banner-celular.webp" width="840" height="450"><img src="assets/banner-1200.webp" srcset="assets/banner-1200.webp 1200w, assets/banner-1983.webp 1983w" sizes="(max-width: 1240px) 100vw, 1200px" width="1200" height="480" alt="${ALT_BANNER}" decoding="async"></picture>`;
+// arte de divulgação como faixa de destaque: largura total, sobre o azul-marinho da própria arte (ver .hero)
+const ALT_HERO = 'Prepare-se para a sua aprovação! Carreiras policiais e jurídicas. A plataforma de questões que vai te levar à posse. Professor Riccardo Nóbrega.';
+const hero = () => `<section class="hero" aria-label="Apresentação"><img src="assets/hero.webp" width="1024" height="572" alt="${ALT_HERO}" decoding="async" fetchpriority="high"></section>`;
 function vInicio(main) {
   const c = CONC[st.conc], pool = poolConc(), discs = discsDoConc();
   const resp = pool.filter(q => st.ans[q.id]), oks = resp.filter(q => st.ans[q.id].ok).length;
@@ -703,7 +715,7 @@ function vInicio(main) {
 
   main.innerHTML = `
   <div class="stack">
-    ${banner()}
+    ${hero()}
     <div><div class="eyebrow">${esc(c.edital)}</div><h1>${esc(c.nome)}</h1>
       <p class="muted small" style="margin:6px 0 0">${esc(c.formato)} · prova: ${esc(c.provaTexto)}${prazo !== null ? ` · <b>${prazo > 0 ? `faltam ${prazo} dias` : prazo === 0 ? 'é hoje' : 'já realizada'}</b>` : ''}</p></div>
     ${avisoInstalar(true)}
@@ -1363,7 +1375,7 @@ function telaLogin() {
   return new Promise(resolve => {
     loginAberto = true; document.body.classList.add('auth');
     const main = $('main'); let falhas = 0, bloqueadoAte = 0;
-    main.innerHTML = `<div class="login">${banner('banner-login')}<form class="login-box" id="loginForm" autocomplete="on">
+    main.innerHTML = `${hero()}<div class="login"><form class="login-box" id="loginForm" autocomplete="on">
       <div class="login-top"><div class="rn-marca"><span class="rn-marca-ic">RN</span><span class="rn-marca-tx"><b>Professor Riccardo Nóbrega</b><small>Plataforma de questões</small></span></div>${seletorTema()}</div>
       <h1 style="font-size:24px">Plataforma de Questões</h1>
       <p class="small muted" style="margin:6px 0 16px">Plataforma de questões do professor Riccardo Nóbrega. Acesso restrito a convidados.</p>
@@ -1395,7 +1407,7 @@ function telaLogin() {
 // =================================================================== versão nova
 // Uma aba aberta (ou o app instalado) continua com o código que carregou. Ao abrir, a cada 15 min e ao voltar
 // para a aba, compara o BUILD embutido com dist/versao.json e oferece atualizar.
-const BUILD = '5dcb68edf521';
+const BUILD = 'e7774596add8';
 let avisouVersao = false;
 function checarVersao() {
   if (avisouVersao || NATIVO || !/^https?:$/.test(location.protocol) || /claude\.(ai|site)/.test(location.host)) return;
