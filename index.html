@@ -543,7 +543,9 @@ function route() {
   render();
 }
 let diagHTML = '';
-function render() { const main = $('main'); main.innerHTML = ''; mostrarQ = null; VIEWS[view](main); if (diagHTML) main.insertAdjacentHTML('afterbegin', diagHTML); }
+// Nada redesenha a tela com o login aberto. Antes, o aviso "pode instalar como app" (beforeinstallprompt, que só
+// ocorre em navegador real com o site publicado) chamava render() e trocava o login pelo Início, sem as barras.
+function render() { if (loginAberto) return; const main = $('main'); main.innerHTML = ''; mostrarQ = null; VIEWS[view](main); if (diagHTML) main.insertAdjacentHTML('afterbegin', diagHTML); }
 // ------------------------------------------------- voltar entre questões (gesto/botão "voltar" do celular)
 // Cada questão visitada vira uma entrada do histórico do navegador (mesmo hash, estado {v, nq, k, ant}).
 // O "voltar" do aparelho reabre a questão anterior em vez de sair da tela; da primeira questão, sai.
@@ -1346,7 +1348,7 @@ function telaLogin() {
 // =================================================================== versão nova
 // Uma aba aberta (ou o app instalado) continua com o código que carregou. Ao abrir, a cada 15 min e ao voltar
 // para a aba, compara o BUILD embutido com dist/versao.json e oferece atualizar.
-const BUILD = '7bc0de8e2eab';
+const BUILD = 'b761d3ad74c4';
 let avisouVersao = false;
 function checarVersao() {
   if (avisouVersao || NATIVO || !/^https?:$/.test(location.protocol) || /claude\.(ai|site)/.test(location.host)) return;
